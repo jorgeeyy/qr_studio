@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class RecentCodes extends StatefulWidget {
-  const RecentCodes({super.key});
+  const RecentCodes({super.key, required this.onHistory});
+
+  final VoidCallback onHistory;
 
   @override
   State<RecentCodes> createState() => _RecentCodesState();
@@ -47,7 +49,7 @@ class _RecentCodesState extends State<RecentCodes> {
             ),
             Spacer(),
             TextButton(
-              onPressed: () {},
+              onPressed: widget.onHistory,
               child: Text(
                 'View All',
                 style: TextStyle(

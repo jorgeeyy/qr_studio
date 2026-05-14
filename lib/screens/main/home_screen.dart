@@ -18,12 +18,15 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
 
-  late final List<Widget> _screens = const [
-    _HomeTab(),
-    CreateScreen(),
-    ScanScreen(),
-    HistoryScreen(),
-    ProfileScreen(),
+  late final List<Widget> _screens = [
+    _HomeTab(
+      onStartScanning: () => _onNavTapped(2),
+      onHistory: () => _onNavTapped(3),
+    ),
+    const CreateScreen(),
+    const ScanScreen(),
+    const HistoryScreen(),
+    const ProfileScreen(),
   ];
 
   static const List<String> _titles = [
@@ -50,28 +53,18 @@ class _HomeScreenState extends State<HomeScreen> {
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
         ),
-        actions: _currentIndex == 0
-            ? [
-                // IconButton(
-                //   icon: const Icon(Icons.notification_add),
-                //   onPressed: () {
-                //     // Handle notifications action
-                //   },
-                // ),
-                IconButton(
-                  icon: const Icon(Icons.settings),
-                  onPressed: () {
-                    // Handle settings action
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SettingsScreen(),
-                      ),
-                    );
-                  },
-                ),
-              ]
-            : null,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              // Handle settings action
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: Padding(
@@ -120,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                label: 'Scan',
+                label: 'Create',
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.qr_code_scanner_outlined),
@@ -135,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: Colors.white,
                   ),
                 ),
-                label: 'Create',
+                label: 'Scan',
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.history),
@@ -171,7 +164,10 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class _HomeTab extends StatelessWidget {
-  const _HomeTab();
+  const _HomeTab({required this.onStartScanning, required this.onHistory});
+
+  final VoidCallback onStartScanning;
+  final VoidCallback onHistory;
 
   @override
   Widget build(BuildContext context) {
@@ -179,12 +175,12 @@ class _HomeTab extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          children: const [
-            QuickGenerateIcons(),
-            SizedBox(height: 20),
-            DigitalExperience(),
-            SizedBox(height: 20),
-            RecentCodes(),
+          children: [
+            const QuickGenerateIcons(),
+            const SizedBox(height: 20),
+            DigitalExperience(onStartScanning: onStartScanning),
+            const SizedBox(height: 20),
+            RecentCodes(onHistory: onHistory),
           ],
         ),
       ),

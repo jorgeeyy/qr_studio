@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class DigitalExperience extends StatelessWidget {
-  const DigitalExperience({super.key});
+  const DigitalExperience({super.key, required this.onStartScanning});
+
+  final VoidCallback onStartScanning;
 
   @override
   Widget build(BuildContext context) {
@@ -31,9 +33,7 @@ class DigitalExperience extends StatelessWidget {
                   ),
                   SizedBox(height: 12),
                   ElevatedButton(
-                    onPressed: () {
-                      // Handle button press
-                    },
+                    onPressed: onStartScanning,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue[800],
                       shape: RoundedRectangleBorder(
