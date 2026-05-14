@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:qr_studio/onboarding/screens/get_started.dart';
+import 'package:qr_studio/screens/onboarding/get_started.dart';
+import 'package:qr_studio/screens/main/home_screen.dart';
 
 class SecondScreen extends StatelessWidget {
   const SecondScreen({super.key});
@@ -16,7 +17,14 @@ class SecondScreen extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () {},
+            onPressed: () {
+              // Navigate to the main screen, skipping onboarding
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const HomeScreen()),
+                (route) => false,
+              );
+            },
             child: const Text(
               'Skip',
               style: TextStyle(fontSize: 15, color: Colors.grey),
@@ -127,7 +135,7 @@ class SecondScreen extends StatelessWidget {
                       MaterialPageRoute(
                         builder: (context) => const GetStarted(),
                       ),
-                      (route) => true,
+                      (route) => false,
                     );
                   },
                   child: Row(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qr_studio/screens/main/home_screen.dart';
 
 class GetStarted extends StatelessWidget {
   const GetStarted({super.key});
@@ -54,13 +55,13 @@ class GetStarted extends StatelessWidget {
                   ),
                   onPressed: () {
                     // Navigate to the next onboarding screen
-                    // Navigator.pushAndRemoveUntil(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder: (context) => const GetStarted(),
-                    //   ),
-                    //   (route) => true,
-                    // );
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const HomeScreen(),
+                      ),
+                      (route) => false,
+                    );
                   },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -70,8 +71,6 @@ class GetStarted extends StatelessWidget {
                         'Get Started',
                         style: TextStyle(fontSize: 18, color: Colors.white),
                       ),
-                      // SizedBox(width: 10),
-                      // Icon(Icons.arrow_forward, color: Colors.white),
                     ],
                   ),
                 ),

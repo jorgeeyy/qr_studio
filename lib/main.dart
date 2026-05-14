@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:qr_studio/onboarding/screens/first_screen.dart';
+import 'package:qr_studio/screens/onboarding/first_screen.dart';
 
 void main() {
   runApp(const MyApp());

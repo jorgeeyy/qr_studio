@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:qr_studio/onboarding/screens/second_screen.dart';
+import 'package:qr_studio/screens/onboarding/second_screen.dart';
+import 'package:qr_studio/screens/main/home_screen.dart';
 
 class FirstScreen extends StatelessWidget {
   const FirstScreen({super.key});
@@ -16,7 +17,14 @@ class FirstScreen extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () {},
+            onPressed: () {
+              // Navigate to the main screen, skipping onboarding
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const HomeScreen()),
+                (route) => false,
+              );
+            },
             child: const Text(
               'Skip',
               style: TextStyle(fontSize: 15, color: Colors.grey),
@@ -39,32 +47,9 @@ class FirstScreen extends StatelessWidget {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(20),
-                      child: Image.asset(
-                        'assets/images/QR3.png',
-                        // width: 500,
-                        // height: 500,
-                      ),
+                      child: Image.asset('assets/images/QR3.png'),
                     ),
                   ),
-                  // Container(
-                  //   padding: EdgeInsets.all(20),
-                  //   decoration: BoxDecoration(
-                  //     color: Colors.white,
-                  //     borderRadius: BorderRadius.circular(20),
-                  //     boxShadow: [
-                  //       BoxShadow(
-                  //         color: Colors.black12,
-                  //         blurRadius: 10,
-                  //         offset: Offset(0, 5),
-                  //       ),
-                  //     ],
-                  //   ),
-                  //   child: Icon(
-                  //     Icons.qr_code_2,
-                  //     size: 120,
-                  //     color: Colors.black54,
-                  //   ),
-                  // ),
                 ),
                 SizedBox(height: 30),
                 Text(
@@ -91,7 +76,7 @@ class FirstScreen extends StatelessWidget {
                     Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(builder: (context) => SecondScreen()),
-                      (route) => true,
+                      (route) => false,
                     );
                   },
                   child: Row(
