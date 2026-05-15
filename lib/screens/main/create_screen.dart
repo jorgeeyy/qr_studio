@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qr_studio/widgets/createscreem_widgets/custom_appearance.dart';
 import 'package:qr_studio/widgets/createscreem_widgets/preview.dart';
 import 'package:qr_studio/widgets/createscreem_widgets/url_create.dart';
 
@@ -18,6 +19,7 @@ class CreateScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(
                 height: 40,
@@ -55,6 +57,33 @@ class CreateScreen extends StatelessWidget {
               Preview(),
               SizedBox(height: 10),
               UrlCreate(),
+              SizedBox(height: 20),
+              CustomAppearance(),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue[600],
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 40,
+                    vertical: 15,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.qr_code_2, size: 24, color: Colors.white),
+                    SizedBox(width: 8),
+                    Text(
+                      'GENERATE CODE',
+                      style: TextStyle(fontSize: 16, color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),

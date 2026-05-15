@@ -32,17 +32,20 @@ class _UrlCreateState extends State<UrlCreate> {
           TextField(
             decoration: InputDecoration(
               hintText: 'https://example.com',
-              fillColor: Colors.grey[100],
-
+              fillColor: Colors.grey[50],
               filled: true,
               hintStyle: TextStyle(color: Colors.grey[500]),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide(color: Colors.grey[100]!),
+                borderSide: BorderSide(color: Colors.grey[200]!),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30),
+                borderSide: BorderSide(color: Colors.grey[200]!),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide(color: Colors.grey[300]!),
+                borderSide: BorderSide(color: Colors.grey[400]!),
               ),
               suffixIcon: Icon(Icons.link, color: Colors.grey[500]),
             ),
