@@ -64,11 +64,12 @@ class Preview extends StatelessWidget {
                   : QrImageView(
                       data: qrData,
                       version: QrVersions.auto,
+                      errorCorrectionLevel: QrErrorCorrectLevel.H,
                       size: 130.0,
                       backgroundColor: backgroundColor,
                       embeddedImage: logoImage,
                       embeddedImageStyle: const QrEmbeddedImageStyle(
-                        size: Size(30, 30),
+                        size: Size(80, 80),
                       ),
                       eyeStyle: QrEyeStyle(
                         eyeShape: isRounded

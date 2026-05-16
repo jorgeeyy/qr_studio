@@ -87,10 +87,10 @@ class _CustomAppearanceState extends State<CustomAppearance> {
 
   @override
   Widget build(BuildContext context) {
-    final ImagePicker _picker = ImagePicker();
+    final ImagePicker picker = ImagePicker();
 
-    Future<void> _pickImage() async {
-      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    Future<void> pickImage() async {
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
       if (image != null) {
         widget.onLogoChanged(FileImage(File(image.path)));
       }
@@ -296,7 +296,7 @@ class _CustomAppearanceState extends State<CustomAppearance> {
           ),
           SizedBox(height: 10),
           GestureDetector(
-            onTap: _pickImage,
+            onTap: pickImage,
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16.0),

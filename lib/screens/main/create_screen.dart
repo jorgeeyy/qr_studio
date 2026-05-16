@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qr_studio/screens/main/result_screen.dart';
 import 'package:qr_studio/widgets/createscreem_widgets/custom_appearance.dart';
 import 'package:qr_studio/widgets/createscreem_widgets/preview.dart';
 import 'package:qr_studio/widgets/createscreem_widgets/url_create.dart';
@@ -11,11 +12,19 @@ class CreateScreen extends StatefulWidget {
 }
 
 class _CreateScreenState extends State<CreateScreen> {
+  final TextEditingController _urlController = TextEditingController();
+
   String _qrData = '';
   Color _foregroundColor = Colors.black;
   Color _backgroundColor = Colors.white;
   bool _isRounded = false;
   ImageProvider? _logoImage;
+
+  @override
+  void dispose() {
+    _urlController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,6 +83,7 @@ class _CreateScreenState extends State<CreateScreen> {
               ),
               SizedBox(height: 10),
               UrlCreate(
+                controller: _urlController,
                 onChanged: (value) {
                   setState(() {
                     _qrData = value;
@@ -94,7 +104,41 @@ class _CreateScreenState extends State<CreateScreen> {
               ),
               SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () async {
+                  if (_qrData.trim().isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Please enter data for your QR code first',
+                        ),
+                      ),
+                    );
+                    return;
+                  }
+                  final shouldReset = await Navigator.push<bool>(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ResultScreen(
+                        qrData: _qrData,
+                        foregroundColor: _foregroundColor,
+                        backgroundColor: _backgroundColor,
+                        isRounded: _isRounded,
+                        logoImage: _logoImage,
+                      ),
+                    ),
+                  );
+
+                  if (shouldReset == true) {
+                    setState(() {
+                      _qrData = '';
+                      _foregroundColor = Colors.black;
+                      _backgroundColor = Colors.white;
+                      _isRounded = false;
+                      _logoImage = null;
+                      _urlController.clear();
+                    });
+                  }
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue[600],
                   padding: const EdgeInsets.symmetric(
