@@ -1,8 +1,18 @@
+import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-// import 'package:qr_studio/screens/main/create_screen.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:gal/gal.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:file_saver/file_saver.dart';
 
-class ResultScreen extends StatelessWidget {
+class ResultScreen extends StatefulWidget {
   final String qrData;
   final Color foregroundColor;
   final Color backgroundColor;
@@ -17,6 +27,157 @@ class ResultScreen extends StatelessWidget {
     required this.isRounded,
     this.logoImage,
   });
+
+  @override
+  State<ResultScreen> createState() => _ResultScreenState();
+}
+
+class _ResultScreenState extends State<ResultScreen> {
+  final GlobalKey _qrKey = GlobalKey();
+  String _selectedFormat = 'PNG';
+
+  Future<Uint8List?> _capturePng() async {
+    try {
+      RenderRepaintBoundary boundary =
+          _qrKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+      ui.Image image = await boundary.toImage(pixelRatio: 5.0);
+      ByteData? byteData = await image.toByteData(
+        format: ui.ImageByteFormat.png,
+      );
+      return byteData?.buffer.asUint8List();
+    } catch (e) {
+      debugPrint(e.toString());
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> _generateFileData() async {
+    final imageBytes = await _capturePng();
+    if (imageBytes == null) return null;
+
+    Uint8List fileBytes;
+    String extension;
+
+    if (_selectedFormat == 'PDF') {
+      final pdfDoc = pw.Document();
+      final imageParams = pw.MemoryImage(imageBytes);
+      pdfDoc.addPage(
+        pw.Page(
+          pageFormat: const PdfPageFormat(1250, 1250),
+          build: (pw.Context context) {
+            return pw.Center(child: pw.Image(imageParams));
+          },
+          margin: pw.EdgeInsets.zero,
+        ),
+      );
+      fileBytes = await pdfDoc.save();
+      extension = 'pdf';
+    } else if (_selectedFormat == 'SVG') {
+      final base64Image = base64Encode(imageBytes);
+      final svgString =
+          '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1250 1250" width="100%" height="100%">
+  <image href="data:image/png;base64,$base64Image" width="1250" height="1250" />
+</svg>''';
+      fileBytes = Uint8List.fromList(utf8.encode(svgString));
+      extension = 'svg';
+    } else {
+      fileBytes = imageBytes;
+      extension = 'png';
+    }
+
+    return {'bytes': fileBytes, 'extension': extension};
+  }
+
+  Future<void> _downloadImage() async {
+    final fileData = await _generateFileData();
+    if (fileData == null) return;
+
+    try {
+      final bytes = fileData['bytes'] as Uint8List;
+      final extension = fileData['extension'] as String;
+      final fileName = 'qr_code_${DateTime.now().millisecondsSinceEpoch}';
+
+      if (extension == 'png' && (Platform.isAndroid || Platform.isIOS)) {
+        final tempDir = await getTemporaryDirectory();
+        final file = File('${tempDir.path}/$fileName.png');
+        await file.writeAsBytes(bytes);
+        await Gal.putImage(file.path);
+      } else {
+        final path = await FileSaver.instance.saveAs(
+          name: fileName,
+          bytes: bytes,
+          fileExtension: extension,
+          mimeType: extension == 'pdf'
+              ? MimeType.pdf
+              : (extension == 'svg' ? MimeType.other : MimeType.png),
+        );
+
+        // If path is null or empty, the user cancelled the dialog.
+        if (path == null || path.isEmpty) return;
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle, color: Colors.white),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  extension == 'png'
+                      ? 'Saved to Gallery!'
+                      : 'Saved to Downloads!',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.green[700],
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.all(16),
+          elevation: 6,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to save file: $e')));
+    }
+  }
+
+  Future<void> _shareImage() async {
+    final fileData = await _generateFileData();
+    if (fileData == null) return;
+
+    try {
+      final bytes = fileData['bytes'] as Uint8List;
+      final extension = fileData['extension'] as String;
+
+      final tempDir = await getTemporaryDirectory();
+      final file = File('${tempDir.path}/qr_code.$extension');
+      await file.writeAsBytes(bytes);
+
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          text: 'Check out my generated QR code!',
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to share: $e')));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,25 +217,33 @@ class ResultScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: QrImageView(
-                  data: qrData,
-                  version: QrVersions.auto,
-                  errorCorrectionLevel: QrErrorCorrectLevel.H,
-                  size: 250.0,
-                  backgroundColor: backgroundColor,
-                  embeddedImage: logoImage,
-                  embeddedImageStyle: const QrEmbeddedImageStyle(
-                    size: Size(150, 150),
-                  ),
-                  eyeStyle: QrEyeStyle(
-                    eyeShape: isRounded ? QrEyeShape.circle : QrEyeShape.square,
-                    color: foregroundColor,
-                  ),
-                  dataModuleStyle: QrDataModuleStyle(
-                    dataModuleShape: isRounded
-                        ? QrDataModuleShape.circle
-                        : QrDataModuleShape.square,
-                    color: foregroundColor,
+                child: RepaintBoundary(
+                  key: _qrKey,
+                  child: Container(
+                    color: Colors.white, // Ensure background is captured
+                    child: QrImageView(
+                      data: widget.qrData,
+                      version: QrVersions.auto,
+                      errorCorrectionLevel: QrErrorCorrectLevel.H,
+                      size: 250.0,
+                      backgroundColor: widget.backgroundColor,
+                      embeddedImage: widget.logoImage,
+                      embeddedImageStyle: const QrEmbeddedImageStyle(
+                        size: Size(95, 95),
+                      ),
+                      eyeStyle: QrEyeStyle(
+                        eyeShape: widget.isRounded
+                            ? QrEyeShape.circle
+                            : QrEyeShape.square,
+                        color: widget.foregroundColor,
+                      ),
+                      dataModuleStyle: QrDataModuleStyle(
+                        dataModuleShape: widget.isRounded
+                            ? QrDataModuleShape.circle
+                            : QrDataModuleShape.square,
+                        color: widget.foregroundColor,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -110,10 +279,16 @@ class ResultScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            setState(() {
+                              _selectedFormat = 'PNG';
+                            });
+                          },
                           style: ElevatedButton.styleFrom(
                             elevation: 0,
-                            backgroundColor: Colors.blue[700],
+                            backgroundColor: _selectedFormat == 'PNG'
+                                ? Colors.blue[700]
+                                : Colors.grey[200],
                             padding: const EdgeInsets.symmetric(
                               horizontal: 20,
                               vertical: 10,
@@ -125,16 +300,26 @@ class ResultScreen extends StatelessWidget {
                           ),
                           child: Text(
                             'PNG',
-                            style: TextStyle(color: Colors.white, fontSize: 18),
+                            style: TextStyle(
+                              color: _selectedFormat == 'PNG'
+                                  ? Colors.white
+                                  : Colors.black87,
+                              fontSize: 18,
+                            ),
                           ),
                         ),
                         SizedBox(width: 10),
-                        // ElevatedButton(onPressed: () {}, child: Text('JPG')),
                         ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            setState(() {
+                              _selectedFormat = 'SVG';
+                            });
+                          },
                           style: ElevatedButton.styleFrom(
                             elevation: 0,
-                            backgroundColor: Colors.grey[200],
+                            backgroundColor: _selectedFormat == 'SVG'
+                                ? Colors.blue[700]
+                                : Colors.grey[200],
                             padding: const EdgeInsets.symmetric(
                               horizontal: 20,
                               vertical: 10,
@@ -147,18 +332,25 @@ class ResultScreen extends StatelessWidget {
                           child: Text(
                             'SVG',
                             style: TextStyle(
-                              color: Colors.black87,
+                              color: _selectedFormat == 'SVG'
+                                  ? Colors.white
+                                  : Colors.black87,
                               fontSize: 18,
-                              // fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
                         SizedBox(width: 10),
                         ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            setState(() {
+                              _selectedFormat = 'PDF';
+                            });
+                          },
                           style: ElevatedButton.styleFrom(
                             elevation: 0,
-                            backgroundColor: Colors.grey[200],
+                            backgroundColor: _selectedFormat == 'PDF'
+                                ? Colors.blue[700]
+                                : Colors.grey[200],
                             padding: const EdgeInsets.symmetric(
                               horizontal: 20,
                               vertical: 10,
@@ -171,9 +363,10 @@ class ResultScreen extends StatelessWidget {
                           child: Text(
                             'PDF',
                             style: TextStyle(
-                              color: Colors.black87,
+                              color: _selectedFormat == 'PDF'
+                                  ? Colors.white
+                                  : Colors.black87,
                               fontSize: 18,
-                              // fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
@@ -187,21 +380,16 @@ class ResultScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton.icon(
-                    onPressed: () {
-                      // TODO: Add save functionality
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Downloading coming soon!'),
-                        ),
-                      );
-                    },
+                    onPressed: _downloadImage,
                     icon: const Icon(
                       Icons.download_outlined,
                       color: Colors.white,
                       size: 24,
                     ),
-                    label: const Text(
-                      'Download Image',
+                    label: Text(
+                      _selectedFormat == 'PNG'
+                          ? 'Save to Gallery'
+                          : 'Download File',
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -222,12 +410,7 @@ class ResultScreen extends StatelessWidget {
                   ),
                   // const SizedBox(width: 20),
                   ElevatedButton(
-                    onPressed: () {
-                      // TODO: Add share functionality
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Share coming soon!')),
-                      );
-                    },
+                    onPressed: _shareImage,
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
                       backgroundColor: Colors.grey[300],
