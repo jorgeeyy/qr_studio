@@ -3,8 +3,19 @@ import 'package:qr_studio/widgets/createscreem_widgets/custom_appearance.dart';
 import 'package:qr_studio/widgets/createscreem_widgets/preview.dart';
 import 'package:qr_studio/widgets/createscreem_widgets/url_create.dart';
 
-class CreateScreen extends StatelessWidget {
+class CreateScreen extends StatefulWidget {
   const CreateScreen({super.key});
+
+  @override
+  State<CreateScreen> createState() => _CreateScreenState();
+}
+
+class _CreateScreenState extends State<CreateScreen> {
+  String _qrData = '';
+  Color _foregroundColor = Colors.black;
+  Color _backgroundColor = Colors.white;
+  bool _isRounded = false;
+  ImageProvider? _logoImage;
 
   @override
   Widget build(BuildContext context) {
@@ -54,11 +65,33 @@ class CreateScreen extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 20),
-              Preview(),
+              Preview(
+                qrData: _qrData,
+                foregroundColor: _foregroundColor,
+                backgroundColor: _backgroundColor,
+                isRounded: _isRounded,
+                logoImage: _logoImage,
+              ),
               SizedBox(height: 10),
-              UrlCreate(),
+              UrlCreate(
+                onChanged: (value) {
+                  setState(() {
+                    _qrData = value;
+                  });
+                },
+              ),
               SizedBox(height: 20),
-              CustomAppearance(),
+              CustomAppearance(
+                foregroundColor: _foregroundColor,
+                backgroundColor: _backgroundColor,
+                isRounded: _isRounded,
+                onForegroundChanged: (c) =>
+                    setState(() => _foregroundColor = c),
+                onBackgroundChanged: (c) =>
+                    setState(() => _backgroundColor = c),
+                onShapeChanged: (r) => setState(() => _isRounded = r),
+                onLogoChanged: (img) => setState(() => _logoImage = img),
+              ),
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {},

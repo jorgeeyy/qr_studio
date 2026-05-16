@@ -1,7 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class Preview extends StatelessWidget {
-  const Preview({super.key});
+  const Preview({
+    super.key,
+    required this.qrData,
+    this.foregroundColor = Colors.black,
+    this.backgroundColor = Colors.transparent,
+    this.isRounded = false,
+    this.logoImage,
+  });
+
+  final String qrData;
+  final Color foregroundColor;
+  final Color backgroundColor;
+  final bool isRounded;
+  final ImageProvider? logoImage;
 
   @override
   Widget build(BuildContext context) {
@@ -30,22 +44,45 @@ class Preview extends StatelessWidget {
               color: Colors.grey[100],
             ),
             child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.qr_code, size: 50, color: Colors.grey[500]),
-                  SizedBox(height: 20),
-                  Text(
-                    'Your QR code will \nappear here as you \ntype',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w500,
+              child: qrData.trim().isEmpty
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.qr_code, size: 50, color: Colors.grey[500]),
+                        SizedBox(height: 10),
+                        Text(
+                          'Your QR code will \nappear here as you \ntype',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    )
+                  : QrImageView(
+                      data: qrData,
+                      version: QrVersions.auto,
+                      size: 130.0,
+                      backgroundColor: backgroundColor,
+                      embeddedImage: logoImage,
+                      embeddedImageStyle: const QrEmbeddedImageStyle(
+                        size: Size(30, 30),
+                      ),
+                      eyeStyle: QrEyeStyle(
+                        eyeShape: isRounded
+                            ? QrEyeShape.circle
+                            : QrEyeShape.square,
+                        color: foregroundColor,
+                      ),
+                      dataModuleStyle: QrDataModuleStyle(
+                        dataModuleShape: isRounded
+                            ? QrDataModuleShape.circle
+                            : QrDataModuleShape.square,
+                        color: foregroundColor,
+                      ),
                     ),
-                  ),
-                ],
-              ),
             ),
           ),
         ],

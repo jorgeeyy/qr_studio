@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class UrlCreate extends StatefulWidget {
-  const UrlCreate({super.key});
+  const UrlCreate({super.key, required this.onChanged});
+
+  final ValueChanged<String> onChanged;
 
   @override
   State<UrlCreate> createState() => _UrlCreateState();
@@ -30,6 +32,7 @@ class _UrlCreateState extends State<UrlCreate> {
           ),
           SizedBox(height: 10),
           TextField(
+            onChanged: widget.onChanged,
             decoration: InputDecoration(
               hintText: 'https://example.com',
               fillColor: Colors.grey[50],
