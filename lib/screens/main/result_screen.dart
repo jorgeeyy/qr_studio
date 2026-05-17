@@ -234,7 +234,7 @@ class _ResultScreenState extends State<ResultScreen> {
                       backgroundColor: widget.backgroundColor,
                       embeddedImage: widget.logoImage,
                       embeddedImageStyle: const QrEmbeddedImageStyle(
-                        size: Size(55, 55),
+                        size: Size(65, 65),
                       ),
                       eyeStyle: QrEyeStyle(
                         eyeShape: widget.isRounded
