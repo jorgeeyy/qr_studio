@@ -44,41 +44,65 @@ class _CustomAppearanceState extends State<CustomAppearance> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.0)),
       ),
+      isScrollControlled:
+          true, // Allows sheet to size properly and avoid keyboard/compact screen issues
       builder: (BuildContext context) {
-        return Container(
-          padding: const EdgeInsets.only(top: 24, left: 24, right: 24),
-          height: 350,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                isForeground ? 'Pick Foreground' : 'Pick Background',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+        final screenHeight = MediaQuery.sizeOf(context).height;
+        final isSmallScreen = screenHeight < 700;
+
+        Color selectedColor = initialColor;
+
+        return SafeArea(
+          child: Container(
+            padding: const EdgeInsets.only(
+              top: 24,
+              left: 24,
+              right: 24,
+              bottom: 16,
+            ),
+            height: isSmallScreen ? screenHeight * 0.55 : 380,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  isForeground ? 'Pick Foreground' : 'Pick Background',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: ColorPicker(
-                  pickerColor: initialColor,
-                  onColorChanged: (Color color) {
-                    final opaqueColor = color.withValues(alpha: 1.0);
-                    if (isForeground) {
-                      widget.onForegroundChanged(opaqueColor);
-                    } else {
-                      widget.onBackgroundChanged(opaqueColor);
-                    }
-                  },
-                  colorPickerWidth: 220,
-                  pickerAreaHeightPercent: 0.4,
-                  enableAlpha: false,
-                  labelTypes: const [],
-                  displayThumbColor: true,
-                  portraitOnly: true,
+                SizedBox(height: isSmallScreen ? 12 : 24),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: StatefulBuilder(
+                      builder:
+                          (BuildContext context, StateSetter setModalState) {
+                            return HueRingPicker(
+                              pickerColor: selectedColor,
+                              onColorChanged: (Color color) {
+                                final opaqueColor = color.withValues(
+                                  alpha: 1.0,
+                                );
+                                setModalState(() {
+                                  selectedColor = opaqueColor;
+                                });
+                                if (isForeground) {
+                                  widget.onForegroundChanged(opaqueColor);
+                                } else {
+                                  widget.onBackgroundChanged(opaqueColor);
+                                }
+                              },
+                              enableAlpha: false,
+                              displayThumbColor: true,
+                              colorPickerHeight: isSmallScreen ? 180 : 250,
+                            );
+                          },
+                    ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },

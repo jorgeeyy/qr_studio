@@ -221,15 +221,20 @@ class _ResultScreenState extends State<ResultScreen> {
                   key: _qrKey,
                   child: Container(
                     color: Colors.white, // Ensure background is captured
+                    padding: const EdgeInsets.all(
+                      12,
+                    ), // Give a little white aesthetic border so it doesn't bleed into the physical edge
                     child: QrImageView(
                       data: widget.qrData,
                       version: QrVersions.auto,
                       errorCorrectionLevel: QrErrorCorrectLevel.H,
-                      size: 250.0,
+                      size: 160.0,
+                      padding: EdgeInsets
+                          .zero, // Removes the large default native QR padding
                       backgroundColor: widget.backgroundColor,
                       embeddedImage: widget.logoImage,
                       embeddedImageStyle: const QrEmbeddedImageStyle(
-                        size: Size(95, 95),
+                        size: Size(55, 55),
                       ),
                       eyeStyle: QrEyeStyle(
                         eyeShape: widget.isRounded
