@@ -276,97 +276,93 @@ class _ResultScreenState extends State<ResultScreen> {
                     ),
                     SizedBox(height: 3),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              _selectedFormat = 'PNG';
-                            });
-                          },
-                          style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            backgroundColor: _selectedFormat == 'PNG'
-                                ? Colors.blue[700]
-                                : Colors.grey[200],
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 10,
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                _selectedFormat = 'PNG';
+                              });
+                            },
+                            style: ElevatedButton.styleFrom(
+                              elevation: 0,
+                              backgroundColor: _selectedFormat == 'PNG'
+                                  ? Colors.blue[700]
+                                  : Colors.grey[200],
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
                             ),
-                            minimumSize: Size(110, 40),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                          ),
-                          child: Text(
-                            'PNG',
-                            style: TextStyle(
-                              color: _selectedFormat == 'PNG'
-                                  ? Colors.white
-                                  : Colors.black87,
-                              fontSize: 18,
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 10),
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              _selectedFormat = 'SVG';
-                            });
-                          },
-                          style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            backgroundColor: _selectedFormat == 'SVG'
-                                ? Colors.blue[700]
-                                : Colors.grey[200],
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 10,
-                            ),
-                            minimumSize: Size(110, 40),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                          ),
-                          child: Text(
-                            'SVG',
-                            style: TextStyle(
-                              color: _selectedFormat == 'SVG'
-                                  ? Colors.white
-                                  : Colors.black87,
-                              fontSize: 18,
+                            child: Text(
+                              'PNG',
+                              style: TextStyle(
+                                color: _selectedFormat == 'PNG'
+                                    ? Colors.white
+                                    : Colors.black87,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
-                        SizedBox(width: 10),
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              _selectedFormat = 'PDF';
-                            });
-                          },
-                          style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            backgroundColor: _selectedFormat == 'PDF'
-                                ? Colors.blue[700]
-                                : Colors.grey[200],
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 10,
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                _selectedFormat = 'SVG';
+                              });
+                            },
+                            style: ElevatedButton.styleFrom(
+                              elevation: 0,
+                              backgroundColor: _selectedFormat == 'SVG'
+                                  ? Colors.blue[700]
+                                  : Colors.grey[200],
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
                             ),
-                            minimumSize: Size(110, 40),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
+                            child: Text(
+                              'SVG',
+                              style: TextStyle(
+                                color: _selectedFormat == 'SVG'
+                                    ? Colors.white
+                                    : Colors.black87,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                          child: Text(
-                            'PDF',
-                            style: TextStyle(
-                              color: _selectedFormat == 'PDF'
-                                  ? Colors.white
-                                  : Colors.black87,
-                              fontSize: 18,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                _selectedFormat = 'PDF';
+                              });
+                            },
+                            style: ElevatedButton.styleFrom(
+                              elevation: 0,
+                              backgroundColor: _selectedFormat == 'PDF'
+                                  ? Colors.blue[700]
+                                  : Colors.grey[200],
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                            ),
+                            child: Text(
+                              'PDF',
+                              style: TextStyle(
+                                color: _selectedFormat == 'PDF'
+                                    ? Colors.white
+                                    : Colors.black87,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),

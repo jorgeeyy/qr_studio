@@ -80,8 +80,10 @@ class _HomeScreenState extends State<HomeScreen> {
             selectedItemColor: Colors.blue,
             unselectedItemColor: Colors.grey,
             backgroundColor: Colors.transparent,
-            showSelectedLabels: false,
+            showSelectedLabels: true,
             showUnselectedLabels: false,
+            selectedFontSize: 0,
+            unselectedFontSize: 0,
             elevation: 0,
             items: [
               // BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home',),
@@ -97,7 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: const Icon(Icons.home, color: Colors.white),
                 ),
 
-                label: '',
+                label: 'Home',
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.add_box_outlined),
@@ -114,6 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
 
                 label: 'Create',
+                backgroundColor: Colors.red,
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.qr_code_scanner_outlined),

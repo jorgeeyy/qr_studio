@@ -154,7 +154,7 @@ class _CreateScreenState extends State<CreateScreen> {
                     setState(() {
                       _qrData = '';
                       _foregroundColor = Colors.black;
-                      _backgroundColor = Colors.white;
+                      _backgroundColor = Colors.black;
                       _isRounded = false;
                       _logoImage = null;
                       _urlController.clear();
