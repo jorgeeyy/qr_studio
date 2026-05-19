@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:qr_studio/models/qr_history_item.dart';
+import 'package:qr_studio/services/qr_history_service.dart';
 
 class RecentCodes extends StatefulWidget {
   const RecentCodes({super.key, required this.onHistory});
@@ -10,34 +12,72 @@ class RecentCodes extends StatefulWidget {
 }
 
 class _RecentCodesState extends State<RecentCodes> {
+  List<QrHistoryItem> _items = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRecent();
+  }
+
+  @override
+  void didUpdateWidget(covariant RecentCodes oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _loadRecent();
+  }
+
+  Future<void> _loadRecent() async {
+    final all = await QrHistoryService.getHistory();
+    if (mounted) {
+      setState(() {
+        _items = all.take(3).toList();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final recentCodes = [
-      (
-        icon: Icons.language,
-        title: 'Portfolio Website',
-        type: 'URL',
-        date: 'May 15',
-        iconBg: Colors.blue[50],
-        iconColor: Colors.blue,
-      ),
-      (
-        icon: Icons.wifi,
-        title: 'Cafe Guest WiFi',
-        type: 'WiFi',
-        date: 'May 14',
-        iconBg: Colors.green[50],
-        iconColor: Colors.green,
-      ),
-      (
-        icon: Icons.contact_page_outlined,
-        title: 'John Doe Contact',
-        type: 'Contact',
-        date: 'May 12',
-        iconBg: Colors.orange[50],
-        iconColor: Colors.orange,
-      ),
-    ];
+    if (_items.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outlineVariant,
+            width: 1.5,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              Icons.qr_code_2,
+              size: 48,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'No QR codes yet',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Generate your first QR code and it will appear here',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return Column(
       children: [
@@ -65,10 +105,11 @@ class _RecentCodesState extends State<RecentCodes> {
         ListView.separated(
           shrinkWrap: true,
           physics: NeverScrollableScrollPhysics(),
-          itemCount: recentCodes.length,
+          itemCount: _items.length,
           separatorBuilder: (context, index) => SizedBox(height: 10),
           itemBuilder: (context, index) {
-            final item = recentCodes[index];
+            final item = _items[index];
+            final date = _formatDate(item.createdAt);
 
             return Container(
               padding: EdgeInsets.all(16),
@@ -81,38 +122,46 @@ class _RecentCodesState extends State<RecentCodes> {
                     offset: Offset(0, 3),
                   ),
                 ],
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      color: item.iconBg,
+                      color: Colors.blue.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(5),
                     ),
                     padding: EdgeInsets.all(8),
-                    child: Icon(item.icon, size: 30, color: item.iconColor),
+                    child: Icon(Icons.qr_code_2, size: 30, color: Colors.blue),
                   ),
                   SizedBox(width: 20),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.title,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.qrData,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                      Text(
-                        '${item.type} . ${item.date}',
-                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                      ),
-                    ],
+                        Text(
+                          'QR Code · $date',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  Spacer(),
                   IconButton(onPressed: () {}, icon: Icon(Icons.more_vert)),
                 ],
               ),
@@ -121,5 +170,14 @@ class _RecentCodesState extends State<RecentCodes> {
         ),
       ],
     );
+  }
+
+  String _formatDate(DateTime dt) {
+    final now = DateTime.now();
+    final diff = now.difference(dt);
+    if (diff.inDays == 0) return 'Today';
+    if (diff.inDays == 1) return 'Yesterday';
+    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    return '${dt.day}/${dt.month}/${dt.year}';
   }
 }

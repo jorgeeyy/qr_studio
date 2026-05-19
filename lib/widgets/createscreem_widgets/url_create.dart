@@ -18,7 +18,7 @@ class _UrlCreateState extends State<UrlCreate> {
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,20 +37,20 @@ class _UrlCreateState extends State<UrlCreate> {
             onChanged: widget.onChanged,
             decoration: InputDecoration(
               hintText: 'https://example.com',
-              fillColor: Colors.grey[50],
+              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
               filled: true,
               hintStyle: TextStyle(color: Colors.grey[500]),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide(color: Colors.grey[200]!),
+                borderSide: BorderSide(color: Colors.grey[700]!),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide(color: Colors.grey[200]!),
+                borderSide: BorderSide(color: Colors.grey[700]!),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide(color: Colors.grey[400]!),
+                borderSide: BorderSide(color: Colors.grey[500]!),
               ),
               suffixIcon: Icon(Icons.link, color: Colors.grey[500]),
             ),

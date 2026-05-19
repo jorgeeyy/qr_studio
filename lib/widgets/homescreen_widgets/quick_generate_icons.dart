@@ -1,30 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:qr_studio/screens/main/create_screen.dart';
 
 class QuickGenerateIcons extends StatelessWidget {
-  const QuickGenerateIcons({super.key});
+  const QuickGenerateIcons({super.key, required this.onTypeTap});
+
+  final ValueChanged<QrCreateType> onTypeTap;
 
   @override
   Widget build(BuildContext context) {
-    const cardData = [
+    final cardData = [
       (
         icon: Icons.language,
         title: 'Website',
-        iconColor: Colors.blue,
-        bgColor: Color(0xFFDCEBFF),
+        iconColor: Colors.blue[400]!,
+        bgColor: Colors.blue.withValues(alpha: 0.15),
+        type: QrCreateType.website,
       ),
       (
         icon: Icons.wifi,
         title: 'WiFi',
-        iconColor: Colors.black,
-        bgColor: Color(0xFFE9EEF3),
+        iconColor: Colors.teal[300]!,
+        bgColor: Colors.teal.withValues(alpha: 0.15),
+        type: QrCreateType.wifi,
       ),
       (
         icon: Icons.contact_page_outlined,
         title: 'Contact',
-        iconColor: Colors.black,
-        bgColor: Color(0xFFFCE4EC),
+        iconColor: Colors.orange[300]!,
+        bgColor: Colors.orange.withValues(alpha: 0.15),
+        type: QrCreateType.contact,
       ),
-      // (icon: Icons.image_outlined, title: 'Background Image'),
     ];
 
     return Column(
@@ -59,42 +64,45 @@ class QuickGenerateIcons extends StatelessWidget {
             separatorBuilder: (context, index) => SizedBox(width: 10),
             padding: EdgeInsets.zero,
             itemBuilder: (BuildContext context, int index) {
-              return SizedBox(
-                width: 120,
-                child: Card(
-                  color: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  elevation: 0.1,
-                  child: Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: EdgeInsets.all(5),
-                          decoration: BoxDecoration(
-                            color: cardData[index].bgColor,
-                            borderRadius: BorderRadius.circular(20),
+              return GestureDetector(
+                onTap: () => onTypeTap(cardData[index].type),
+                child: SizedBox(
+                  width: 120,
+                  child: Card(
+                    color: Theme.of(context).colorScheme.surface,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    elevation: 0.1,
+                    child: Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              color: cardData[index].bgColor,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Icon(
+                              cardData[index].icon,
+                              size: 18,
+                              color: cardData[index].iconColor,
+                            ),
                           ),
-                          child: Icon(
-                            cardData[index].icon,
-                            size: 18,
-                            color: cardData[index].iconColor,
+                          Spacer(),
+                          Text(
+                            cardData[index].title,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 14,
+                              // fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
                           ),
-                        ),
-                        Spacer(),
-                        Text(
-                          cardData[index].title,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 14,
-                            // fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),

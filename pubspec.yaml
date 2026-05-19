@@ -45,6 +45,7 @@ dependencies:
   image: ^4.8.0
   flutter_image_compress: ^2.4.0
   pretty_qr_code: ^3.6.0
+  shared_preferences: ^2.3.5
 
 dev_dependencies:
   flutter_test:

@@ -17,13 +17,18 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+  final _createScreenKey = GlobalKey<CreateScreenState>();
 
   late final List<Widget> _screens = [
     _HomeTab(
       onStartScanning: () => _onNavTapped(2),
       onHistory: () => _onNavTapped(3),
+      onCreateType: (type) {
+        _createScreenKey.currentState?.setType(type);
+        _onNavTapped(1);
+      },
     ),
-    const CreateScreen(),
+    CreateScreen(key: _createScreenKey),
     const ScanScreen(),
     const HistoryScreen(),
     const ProfileScreen(),
@@ -73,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
           elevation: 15,
           borderRadius: BorderRadius.circular(36),
           clipBehavior: Clip.antiAlias,
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           child: BottomNavigationBar(
             type: BottomNavigationBarType.fixed,
             currentIndex: _currentIndex,
@@ -167,10 +172,15 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class _HomeTab extends StatelessWidget {
-  const _HomeTab({required this.onStartScanning, required this.onHistory});
+  const _HomeTab({
+    required this.onStartScanning,
+    required this.onHistory,
+    required this.onCreateType,
+  });
 
   final VoidCallback onStartScanning;
   final VoidCallback onHistory;
+  final ValueChanged<QrCreateType> onCreateType;
 
   @override
   Widget build(BuildContext context) {
@@ -179,7 +189,7 @@ class _HomeTab extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            const QuickGenerateIcons(),
+            QuickGenerateIcons(onTypeTap: onCreateType),
             const SizedBox(height: 20),
             DigitalExperience(onStartScanning: onStartScanning),
             const SizedBox(height: 20),

@@ -238,13 +238,17 @@ class _CustomAppearanceState extends State<CustomAppearance> {
       leading: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue[100] : Colors.grey[100],
+          color: isSelected
+              ? Colors.blue.withValues(alpha: 0.2)
+              : Theme.of(context).colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(
           icon,
           size: 22,
-          color: isSelected ? Colors.blue[800] : Colors.grey[800],
+          color: isSelected
+              ? Colors.blue[400]
+              : Theme.of(context).colorScheme.onSurface,
         ),
       ),
       title: Text(
@@ -252,11 +256,13 @@ class _CustomAppearanceState extends State<CustomAppearance> {
         style: TextStyle(
           fontSize: 16,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-          color: isSelected ? Colors.blue[800] : Colors.black87,
+          color: isSelected
+              ? Colors.blue[400]
+              : Theme.of(context).colorScheme.onSurface,
         ),
       ),
       trailing: isSelected
-          ? Icon(Icons.check_circle, color: Colors.blue[800], size: 28)
+          ? Icon(Icons.check_circle, color: Colors.blue[400], size: 28)
           : null,
       onTap: () {
         if (isBody) {
@@ -315,9 +321,9 @@ class _CustomAppearanceState extends State<CustomAppearance> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey[300]!, width: 1.5),
+          border: Border.all(color: Colors.grey[700]!, width: 1.5),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.03),
@@ -331,10 +337,14 @@ class _CustomAppearanceState extends State<CustomAppearance> {
             Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: Colors.grey[100],
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(icon, size: 16, color: Colors.grey[800]),
+              child: Icon(
+                icon,
+                size: 16,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
             ),
             const SizedBox(width: 8),
             Expanded(
@@ -342,14 +352,14 @@ class _CustomAppearanceState extends State<CustomAppearance> {
                 title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
-                  color: Colors.black87,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ),
-            Icon(Icons.keyboard_arrow_down, size: 20, color: Colors.blue[800]),
+            Icon(Icons.keyboard_arrow_down, size: 20, color: Colors.blue[400]),
           ],
         ),
       ),
@@ -360,7 +370,7 @@ class _CustomAppearanceState extends State<CustomAppearance> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -399,7 +409,9 @@ class _CustomAppearanceState extends State<CustomAppearance> {
                   ),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(30),
                     ),
                     padding: const EdgeInsets.all(16.0),
@@ -427,7 +439,9 @@ class _CustomAppearanceState extends State<CustomAppearance> {
                   ),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(30),
                     ),
                     padding: const EdgeInsets.all(16.0),
@@ -508,7 +522,7 @@ class _CustomAppearanceState extends State<CustomAppearance> {
           SizedBox(height: 10),
           Container(
             decoration: BoxDecoration(
-              color: Colors.grey[100],
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(12),
             ),
             padding: const EdgeInsets.all(4.0),
@@ -534,7 +548,8 @@ class _CustomAppearanceState extends State<CustomAppearance> {
                             fontWeight: FontWeight.w600,
                             color: widget.logoPosition == pos
                                 ? Colors.white
-                                : Colors.grey[600],
+                                : Theme.of(context).colorScheme.onSurface
+                                      .withValues(alpha: 0.6),
                           ),
                         ),
                       ),
@@ -550,7 +565,7 @@ class _CustomAppearanceState extends State<CustomAppearance> {
               width: double.infinity,
               padding: const EdgeInsets.all(16.0),
               decoration: BoxDecoration(
-                color: Colors.grey[100],
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(30),
               ),
               child: Row(
@@ -559,12 +574,12 @@ class _CustomAppearanceState extends State<CustomAppearance> {
                   Icon(
                     Icons.file_upload_outlined,
                     size: 24,
-                    color: Colors.blue[800],
+                    color: Colors.blue[400],
                   ),
                   SizedBox(width: 8),
                   Text(
                     'Upload Logo',
-                    style: TextStyle(fontSize: 14, color: Colors.blue[800]),
+                    style: TextStyle(fontSize: 14, color: Colors.blue[400]),
                   ),
                 ],
               ),
