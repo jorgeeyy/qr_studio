@@ -1,79 +1,49 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:image_picker/image_picker.dart';
-
-import '../../utils/image_utils.dart';
+import 'package:pretty_qr_code/pretty_qr_code.dart';
+import 'package:qr_studio/utils/qr_shapes.dart';
 
 class CustomAppearance extends StatefulWidget {
   const CustomAppearance({
     super.key,
     required this.foregroundColor,
     required this.backgroundColor,
-    required this.isRounded,
+    required this.eyeStyle,
+    required this.bodyStyle,
     required this.onForegroundChanged,
     required this.onBackgroundChanged,
-    required this.onShapeChanged,
+    required this.onEyeShapeChanged,
+    required this.onBodyShapeChanged,
     required this.onLogoChanged,
+    required this.onLogoPositionChanged,
+    this.logoPosition = PrettyQrDecorationImagePosition.embedded,
   });
 
   final Color foregroundColor;
   final Color backgroundColor;
-  final bool isRounded;
+  final QrStyle eyeStyle;
+  final QrStyle bodyStyle;
   final ValueChanged<Color> onForegroundChanged;
   final ValueChanged<Color> onBackgroundChanged;
-  final ValueChanged<bool> onShapeChanged;
+  final ValueChanged<QrStyle> onEyeShapeChanged;
+  final ValueChanged<QrStyle> onBodyShapeChanged;
   final ValueChanged<ImageProvider?> onLogoChanged;
+  final ValueChanged<PrettyQrDecorationImagePosition> onLogoPositionChanged;
+  final PrettyQrDecorationImagePosition logoPosition;
 
   @override
   State<CustomAppearance> createState() => _CustomAppearanceState();
 }
 
 class _CustomAppearanceState extends State<CustomAppearance> {
-  XFile? _selectedLogoFile;
-  bool _removeBackground = false;
-  bool _isProcessingLogo = false;
-
-  Future<void> _processAndApplyLogo() async {
-    if (_selectedLogoFile == null) return;
-
-    if (!_removeBackground) {
-      widget.onLogoChanged(FileImage(File(_selectedLogoFile!.path)));
-      return;
-    }
-
-    setState(() {
-      _isProcessingLogo = true;
-    });
-
-    try {
-      final bytes = await File(_selectedLogoFile!.path).readAsBytes();
-      final processedBytes = await compute(removeBackgroundProcess, bytes);
-      widget.onLogoChanged(MemoryImage(processedBytes));
-    } catch (e) {
-      debugPrint('Error processing logo: $e');
-      widget.onLogoChanged(
-        FileImage(File(_selectedLogoFile!.path)),
-      ); // Fallback to raw file
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isProcessingLogo = false;
-        });
-      }
-    }
-  }
-
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
-      setState(() {
-        _selectedLogoFile = image;
-      });
-      _processAndApplyLogo();
+      widget.onLogoChanged(FileImage(File(image.path)));
     }
   }
 
@@ -154,6 +124,235 @@ class _CustomAppearanceState extends State<CustomAppearance> {
           ),
         );
       },
+    );
+  }
+
+  void _showShapePicker({required bool isBody, required QrStyle currentStyle}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.0)),
+      ),
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  isBody ? 'Select Inner Body Shape' : 'Select Outer Eye Shape',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildShapeOption(
+                          title: 'Square (Classic)',
+                          icon: isBody ? Icons.grid_on : Icons.crop_square,
+                          value: QrStyle.square,
+                          currentValue: currentStyle,
+                          isBody: isBody,
+                        ),
+                        _buildShapeOption(
+                          title: 'Rounded Squares',
+                          icon: Icons.check_box_outline_blank,
+                          value: QrStyle.rounded,
+                          currentValue: currentStyle,
+                          isBody: isBody,
+                        ),
+                        _buildShapeOption(
+                          title: isBody ? 'Dots' : 'Dots (Rounded)',
+                          icon: Icons.lens_blur,
+                          value: QrStyle.dots,
+                          currentValue: currentStyle,
+                          isBody: isBody,
+                        ),
+                        _buildShapeOption(
+                          title: isBody ? 'Smooth' : 'Smooth (Circle)',
+                          icon: isBody ? Icons.waves : Icons.circle_outlined,
+                          value: QrStyle.smooth,
+                          currentValue: currentStyle,
+                          isBody: isBody,
+                        ),
+                        _buildShapeOption(
+                          title: 'Diamond',
+                          icon: Icons.diamond_outlined,
+                          value: QrStyle.diamond,
+                          currentValue: currentStyle,
+                          isBody: isBody,
+                        ),
+                        _buildShapeOption(
+                          title: 'Star',
+                          icon: Icons.star_border,
+                          value: QrStyle.star,
+                          currentValue: currentStyle,
+                          isBody: isBody,
+                        ),
+                        _buildShapeOption(
+                          title: 'Hexagon',
+                          icon: Icons.hexagon_outlined,
+                          value: QrStyle.hexagon,
+                          currentValue: currentStyle,
+                          isBody: isBody,
+                        ),
+                        _buildShapeOption(
+                          title: 'Leaf',
+                          icon: Icons.eco_outlined,
+                          value: QrStyle.leaf,
+                          currentValue: currentStyle,
+                          isBody: isBody,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildShapeOption({
+    required String title,
+    required IconData icon,
+    required QrStyle value,
+    required QrStyle currentValue,
+    required bool isBody,
+  }) {
+    final isSelected = value == currentValue;
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 24.0,
+        vertical: 4.0,
+      ),
+      leading: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blue[100] : Colors.grey[100],
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(
+          icon,
+          size: 22,
+          color: isSelected ? Colors.blue[800] : Colors.grey[800],
+        ),
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+          color: isSelected ? Colors.blue[800] : Colors.black87,
+        ),
+      ),
+      trailing: isSelected
+          ? Icon(Icons.check_circle, color: Colors.blue[800], size: 28)
+          : null,
+      onTap: () {
+        if (isBody) {
+          widget.onBodyShapeChanged(value);
+        } else {
+          widget.onEyeShapeChanged(value);
+        }
+        Navigator.pop(context);
+      },
+    );
+  }
+
+  Widget _buildCurrentShapeDisplay({
+    required QrStyle currentStyle,
+    required bool isBody,
+  }) {
+    String title;
+    IconData icon;
+    switch (currentStyle) {
+      case QrStyle.square:
+        title = 'Square';
+        icon = isBody ? Icons.grid_on : Icons.crop_square;
+        break;
+      case QrStyle.rounded:
+        title = 'Rounded';
+        icon = Icons.check_box_outline_blank;
+        break;
+      case QrStyle.dots:
+        title = 'Dots';
+        icon = Icons.lens_blur;
+        break;
+      case QrStyle.smooth:
+        title = 'Smooth';
+        icon = isBody ? Icons.waves : Icons.circle_outlined;
+        break;
+      case QrStyle.diamond:
+        title = 'Diamond';
+        icon = Icons.diamond_outlined;
+        break;
+      case QrStyle.star:
+        title = 'Star';
+        icon = Icons.star_border;
+        break;
+      case QrStyle.hexagon:
+        title = 'Hexagon';
+        icon = Icons.hexagon_outlined;
+        break;
+      case QrStyle.leaf:
+        title = 'Leaf';
+        icon = Icons.eco_outlined;
+        break;
+    }
+
+    return GestureDetector(
+      onTap: () => _showShapePicker(isBody: isBody, currentStyle: currentStyle),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey[300]!, width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, size: 16, color: Colors.grey[800]),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Icon(Icons.keyboard_arrow_down, size: 20, color: Colors.blue[800]),
+          ],
+        ),
+      ),
     );
   }
 
@@ -251,104 +450,53 @@ class _CustomAppearanceState extends State<CustomAppearance> {
               ),
             ],
           ),
-          SizedBox(height: 10),
-          Text(
-            'Shape selector'.toUpperCase(),
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          SizedBox(height: 10),
+          SizedBox(height: 20),
           Row(
             children: [
               Expanded(
-                child: GestureDetector(
-                  onTap: () => widget.onShapeChanged(false),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: !widget.isRounded
-                          ? Colors.blue[50]
-                          : Colors.grey[100],
-                      border: Border.all(
-                        color: !widget.isRounded
-                            ? Colors.blue
-                            : Colors.transparent,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'body shape'.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
                       ),
-                      borderRadius: BorderRadius.circular(50),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.qr_code,
-                          size: 24,
-                          color: !widget.isRounded
-                              ? Colors.blue
-                              : Colors.grey[800],
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          'Classic',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: !widget.isRounded
-                                ? Colors.blue
-                                : Colors.grey[800],
-                          ),
-                        ),
-                      ],
+                    SizedBox(height: 8),
+                    _buildCurrentShapeDisplay(
+                      currentStyle: widget.bodyStyle,
+                      isBody: true,
                     ),
-                  ),
+                  ],
                 ),
               ),
-              SizedBox(width: 10),
+              SizedBox(width: 12),
               Expanded(
-                child: GestureDetector(
-                  onTap: () => widget.onShapeChanged(true),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: widget.isRounded
-                          ? Colors.blue[50]
-                          : Colors.grey[100],
-                      border: Border.all(
-                        color: widget.isRounded
-                            ? Colors.blue
-                            : Colors.transparent,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'eye shape'.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
                       ),
-                      borderRadius: BorderRadius.circular(50),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.circle_outlined,
-                          size: 24,
-                          color: widget.isRounded
-                              ? Colors.blue
-                              : Colors.grey[800],
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          'Rounded',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: widget.isRounded
-                                ? Colors.blue
-                                : Colors.grey[800],
-                          ),
-                        ),
-                      ],
+                    SizedBox(height: 8),
+                    _buildCurrentShapeDisplay(
+                      currentStyle: widget.eyeStyle,
+                      isBody: false,
                     ),
-                  ),
+                  ],
                 ),
               ),
             ],
           ),
-          SizedBox(height: 20),
+          SizedBox(height: 24),
           Text(
             'logo upload'.toUpperCase(),
             style: TextStyle(
@@ -361,41 +509,36 @@ class _CustomAppearanceState extends State<CustomAppearance> {
           Container(
             decoration: BoxDecoration(
               color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(12),
             ),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 8.0,
-            ),
+            padding: const EdgeInsets.all(4.0),
             child: Row(
               children: [
-                Expanded(
-                  child: Text(
-                    'Remove solid background',
-                    style: TextStyle(fontSize: 14, color: Colors.blue[800]),
-                  ),
-                ),
-                if (_isProcessingLogo)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 12.0),
-                    child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                for (final pos in PrettyQrDecorationImagePosition.values)
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => widget.onLogoPositionChanged(pos),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: widget.logoPosition == pos
+                              ? Colors.blue[700]
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          pos.name[0].toUpperCase() + pos.name.substring(1),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: widget.logoPosition == pos
+                                ? Colors.white
+                                : Colors.grey[600],
+                          ),
+                        ),
+                      ),
                     ),
-                  )
-                else
-                  Switch(
-                    value: _removeBackground,
-                    onChanged: (val) {
-                      setState(() {
-                        _removeBackground = val;
-                      });
-                      if (_selectedLogoFile != null) {
-                        _processAndApplyLogo();
-                      }
-                    },
-                    activeThumbColor: Colors.blue,
                   ),
               ],
             ),

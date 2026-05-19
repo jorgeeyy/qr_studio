@@ -4,28 +4,34 @@ import 'dart:ui' as ui;
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:qr_flutter/qr_flutter.dart';
+import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:gal/gal.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:file_saver/file_saver.dart';
+import 'package:qr_studio/utils/qr_shapes.dart';
+import 'package:qr_studio/utils/custom_qr_shapes.dart';
 
 class ResultScreen extends StatefulWidget {
   final String qrData;
   final Color foregroundColor;
   final Color backgroundColor;
-  final bool isRounded;
+  final QrStyle eyeStyle;
+  final QrStyle bodyStyle;
   final ImageProvider? logoImage;
+  final PrettyQrDecorationImagePosition logoPosition;
 
   const ResultScreen({
     super.key,
     required this.qrData,
     required this.foregroundColor,
     required this.backgroundColor,
-    required this.isRounded,
+    required this.eyeStyle,
+    required this.bodyStyle,
     this.logoImage,
+    this.logoPosition = PrettyQrDecorationImagePosition.embedded,
   });
 
   @override
@@ -179,6 +185,27 @@ class _ResultScreenState extends State<ResultScreen> {
     }
   }
 
+  PrettyQrShape _getShape(QrStyle style, Color color) {
+    switch (style) {
+      case QrStyle.square:
+        return PrettyQrSquaresSymbol(color: color);
+      case QrStyle.rounded:
+        return PrettyQrSquaresSymbol(color: color, rounding: 1.0);
+      case QrStyle.dots:
+        return PrettyQrDotsSymbol(color: color);
+      case QrStyle.smooth:
+        return PrettyQrSmoothSymbol(color: color, roundFactor: 1.0);
+      case QrStyle.diamond:
+        return QrDiamondShape(color: color);
+      case QrStyle.star:
+        return QrStarShape(color: color);
+      case QrStyle.hexagon:
+        return QrHexagonShape(color: color);
+      case QrStyle.leaf:
+        return QrLeafShape(color: color);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -224,29 +251,28 @@ class _ResultScreenState extends State<ResultScreen> {
                     padding: const EdgeInsets.all(
                       12,
                     ), // Give a little white aesthetic border so it doesn't bleed into the physical edge
-                    child: QrImageView(
+                    height: 200,
+                    width: 200,
+                    child: PrettyQrView.data(
                       data: widget.qrData,
-                      version: QrVersions.auto,
-                      errorCorrectionLevel: QrErrorCorrectLevel.H,
-                      size: 160.0,
-                      padding: EdgeInsets
-                          .zero, // Removes the large default native QR padding
-                      backgroundColor: widget.backgroundColor,
-                      embeddedImage: widget.logoImage,
-                      embeddedImageStyle: const QrEmbeddedImageStyle(
-                        size: Size(65, 65),
-                      ),
-                      eyeStyle: QrEyeStyle(
-                        eyeShape: widget.isRounded
-                            ? QrEyeShape.circle
-                            : QrEyeShape.square,
-                        color: widget.foregroundColor,
-                      ),
-                      dataModuleStyle: QrDataModuleStyle(
-                        dataModuleShape: widget.isRounded
-                            ? QrDataModuleShape.circle
-                            : QrDataModuleShape.square,
-                        color: widget.foregroundColor,
+                      errorCorrectLevel: QrErrorCorrectLevel.H,
+                      decoration: PrettyQrDecoration(
+                        background: widget.backgroundColor,
+                        // ignore: experimental_api
+                        shape: PrettyQrShape.custom(
+                          _getShape(widget.bodyStyle, widget.foregroundColor),
+                          finderPattern: _getShape(
+                            widget.eyeStyle,
+                            widget.foregroundColor,
+                          ),
+                        ),
+                        image: widget.logoImage != null
+                            ? PrettyQrDecorationImage(
+                                image: widget.logoImage!,
+                                scale: 0.35,
+                                position: widget.logoPosition,
+                              )
+                            : null,
                       ),
                     ),
                   ),

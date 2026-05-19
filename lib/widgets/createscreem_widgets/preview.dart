@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:qr_flutter/qr_flutter.dart';
+import 'package:pretty_qr_code/pretty_qr_code.dart';
+import 'package:qr_studio/utils/qr_shapes.dart';
+import 'package:qr_studio/utils/custom_qr_shapes.dart';
 
 class Preview extends StatelessWidget {
   const Preview({
@@ -7,18 +9,46 @@ class Preview extends StatelessWidget {
     required this.qrData,
     this.foregroundColor = Colors.black,
     this.backgroundColor = Colors.transparent,
-    this.isRounded = false,
+    this.eyeStyle = QrStyle.square,
+    this.bodyStyle = QrStyle.square,
     this.logoImage,
+    this.logoPosition = PrettyQrDecorationImagePosition.embedded,
   });
 
   final String qrData;
   final Color foregroundColor;
   final Color backgroundColor;
-  final bool isRounded;
+  final QrStyle eyeStyle;
+  final QrStyle bodyStyle;
   final ImageProvider? logoImage;
+  final PrettyQrDecorationImagePosition logoPosition;
+
+  PrettyQrShape _getShape(QrStyle style, Color color) {
+    switch (style) {
+      case QrStyle.square:
+        return PrettyQrSquaresSymbol(color: color);
+      case QrStyle.rounded:
+        return PrettyQrSquaresSymbol(color: color, rounding: 1.0);
+      case QrStyle.dots:
+        return PrettyQrDotsSymbol(color: color);
+      case QrStyle.smooth:
+        return PrettyQrSmoothSymbol(color: color, roundFactor: 1.0);
+      case QrStyle.diamond:
+        return QrDiamondShape(color: color);
+      case QrStyle.star:
+        return QrStarShape(color: color);
+      case QrStyle.hexagon:
+        return QrHexagonShape(color: color);
+      case QrStyle.leaf:
+        return QrLeafShape(color: color);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final eyeShape = _getShape(eyeStyle, foregroundColor);
+    final bodyShape = _getShape(bodyStyle, foregroundColor);
+
     return Container(
       padding: const EdgeInsets.all(16.0),
       width: double.infinity,
@@ -61,27 +91,26 @@ class Preview extends StatelessWidget {
                         ),
                       ],
                     )
-                  : QrImageView(
-                      data: qrData,
-                      version: QrVersions.auto,
-                      errorCorrectionLevel: QrErrorCorrectLevel.H,
-                      size: 130.0,
-                      backgroundColor: backgroundColor,
-                      embeddedImage: logoImage,
-                      embeddedImageStyle: const QrEmbeddedImageStyle(
-                        size: Size(80, 80),
-                      ),
-                      eyeStyle: QrEyeStyle(
-                        eyeShape: isRounded
-                            ? QrEyeShape.circle
-                            : QrEyeShape.square,
-                        color: foregroundColor,
-                      ),
-                      dataModuleStyle: QrDataModuleStyle(
-                        dataModuleShape: isRounded
-                            ? QrDataModuleShape.circle
-                            : QrDataModuleShape.square,
-                        color: foregroundColor,
+                  : Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: PrettyQrView.data(
+                        data: qrData,
+                        errorCorrectLevel: QrErrorCorrectLevel.H,
+                        decoration: PrettyQrDecoration(
+                          background: backgroundColor,
+                          // ignore: experimental_api
+                          shape: PrettyQrShape.custom(
+                            bodyShape,
+                            finderPattern: eyeShape,
+                          ),
+                          image: logoImage != null
+                              ? PrettyQrDecorationImage(
+                                  image: logoImage!,
+                                  scale: 0.35,
+                                  position: logoPosition,
+                                )
+                              : null,
+                        ),
                       ),
                     ),
             ),

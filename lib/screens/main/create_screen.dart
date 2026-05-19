@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:qr_studio/screens/main/result_screen.dart';
 import 'package:qr_studio/widgets/createscreem_widgets/custom_appearance.dart';
 import 'package:qr_studio/widgets/createscreem_widgets/preview.dart';
 import 'package:qr_studio/widgets/createscreem_widgets/url_create.dart';
+import 'package:qr_studio/utils/qr_shapes.dart';
 
 class CreateScreen extends StatefulWidget {
   const CreateScreen({super.key});
@@ -17,8 +19,11 @@ class _CreateScreenState extends State<CreateScreen> {
   String _qrData = '';
   Color _foregroundColor = Colors.black;
   Color _backgroundColor = Colors.white;
-  bool _isRounded = false;
+  QrStyle _eyeStyle = QrStyle.square;
+  QrStyle _bodyStyle = QrStyle.square;
   ImageProvider? _logoImage;
+  PrettyQrDecorationImagePosition _logoPosition =
+      PrettyQrDecorationImagePosition.embedded;
 
   @override
   void dispose() {
@@ -78,8 +83,10 @@ class _CreateScreenState extends State<CreateScreen> {
                 qrData: _qrData,
                 foregroundColor: _foregroundColor,
                 backgroundColor: _backgroundColor,
-                isRounded: _isRounded,
+                eyeStyle: _eyeStyle,
+                bodyStyle: _bodyStyle,
                 logoImage: _logoImage,
+                logoPosition: _logoPosition,
               ),
               SizedBox(height: 10),
               UrlCreate(
@@ -94,13 +101,18 @@ class _CreateScreenState extends State<CreateScreen> {
               CustomAppearance(
                 foregroundColor: _foregroundColor,
                 backgroundColor: _backgroundColor,
-                isRounded: _isRounded,
+                eyeStyle: _eyeStyle,
+                bodyStyle: _bodyStyle,
                 onForegroundChanged: (c) =>
                     setState(() => _foregroundColor = c),
                 onBackgroundChanged: (c) =>
                     setState(() => _backgroundColor = c),
-                onShapeChanged: (r) => setState(() => _isRounded = r),
+                onEyeShapeChanged: (r) => setState(() => _eyeStyle = r),
+                onBodyShapeChanged: (r) => setState(() => _bodyStyle = r),
                 onLogoChanged: (img) => setState(() => _logoImage = img),
+                onLogoPositionChanged: (pos) =>
+                    setState(() => _logoPosition = pos),
+                logoPosition: _logoPosition,
               ),
               SizedBox(height: 20),
               ElevatedButton(
@@ -141,11 +153,16 @@ class _CreateScreenState extends State<CreateScreen> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => ResultScreen(
-                        qrData: _qrData,
+                        qrData: _qrData.startsWith('http://') ||
+                                _qrData.startsWith('https://')
+                            ? _qrData
+                            : 'https://$_qrData',
                         foregroundColor: _foregroundColor,
                         backgroundColor: _backgroundColor,
-                        isRounded: _isRounded,
+                        eyeStyle: _eyeStyle,
+                        bodyStyle: _bodyStyle,
                         logoImage: _logoImage,
+                        logoPosition: _logoPosition,
                       ),
                     ),
                   );
@@ -155,8 +172,10 @@ class _CreateScreenState extends State<CreateScreen> {
                       _qrData = '';
                       _foregroundColor = Colors.black;
                       _backgroundColor = Colors.black;
-                      _isRounded = false;
+                      _eyeStyle = QrStyle.square;
+                      _bodyStyle = QrStyle.square;
                       _logoImage = null;
+                      _logoPosition = PrettyQrDecorationImagePosition.embedded;
                       _urlController.clear();
                     });
                   }
