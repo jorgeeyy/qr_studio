@@ -1,8 +1,11 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:image_picker/image_picker.dart';
+
+import '../../utils/image_utils.dart';
 
 class CustomAppearance extends StatefulWidget {
   const CustomAppearance({
@@ -29,6 +32,51 @@ class CustomAppearance extends StatefulWidget {
 }
 
 class _CustomAppearanceState extends State<CustomAppearance> {
+  XFile? _selectedLogoFile;
+  bool _removeBackground = false;
+  bool _isProcessingLogo = false;
+
+  Future<void> _processAndApplyLogo() async {
+    if (_selectedLogoFile == null) return;
+
+    if (!_removeBackground) {
+      widget.onLogoChanged(FileImage(File(_selectedLogoFile!.path)));
+      return;
+    }
+
+    setState(() {
+      _isProcessingLogo = true;
+    });
+
+    try {
+      final bytes = await File(_selectedLogoFile!.path).readAsBytes();
+      final processedBytes = await compute(removeBackgroundProcess, bytes);
+      widget.onLogoChanged(MemoryImage(processedBytes));
+    } catch (e) {
+      debugPrint('Error processing logo: $e');
+      widget.onLogoChanged(
+        FileImage(File(_selectedLogoFile!.path)),
+      ); // Fallback to raw file
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isProcessingLogo = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        _selectedLogoFile = image;
+      });
+      _processAndApplyLogo();
+    }
+  }
+
   void _showColorPicker({
     required bool isForeground,
     required Color currentColor,
@@ -111,15 +159,6 @@ class _CustomAppearanceState extends State<CustomAppearance> {
 
   @override
   Widget build(BuildContext context) {
-    final ImagePicker picker = ImagePicker();
-
-    Future<void> pickImage() async {
-      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-      if (image != null) {
-        widget.onLogoChanged(FileImage(File(image.path)));
-      }
-    }
-
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -319,8 +358,51 @@ class _CustomAppearanceState extends State<CustomAppearance> {
             ),
           ),
           SizedBox(height: 10),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(16),
+            ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 8.0,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Remove solid background',
+                    style: TextStyle(fontSize: 14, color: Colors.blue[800]),
+                  ),
+                ),
+                if (_isProcessingLogo)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 12.0),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                else
+                  Switch(
+                    value: _removeBackground,
+                    onChanged: (val) {
+                      setState(() {
+                        _removeBackground = val;
+                      });
+                      if (_selectedLogoFile != null) {
+                        _processAndApplyLogo();
+                      }
+                    },
+                    activeThumbColor: Colors.blue,
+                  ),
+              ],
+            ),
+          ),
+          SizedBox(height: 10),
           GestureDetector(
-            onTap: pickImage,
+            onTap: _pickImage,
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16.0),
