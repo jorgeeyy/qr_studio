@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:qr_studio/models/qr_history_item.dart';
@@ -237,6 +239,13 @@ class _HistoryCard extends StatelessWidget {
                       ),
                     ),
                     background: item.backgroundColor,
+                    image: (!kIsWeb && item.logoPath != null)
+                        ? PrettyQrDecorationImage(
+                            image: FileImage(File(item.logoPath!)),
+                            scale: 0.35,
+                            position: item.logoPosition,
+                          )
+                        : null,
                   ),
                 ),
               ),

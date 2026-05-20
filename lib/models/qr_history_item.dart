@@ -13,6 +13,7 @@ class QrHistoryItem {
   final QrStyle eyeStyle;
   final QrStyle bodyStyle;
   final PrettyQrDecorationImagePosition logoPosition;
+  final String? logoPath;
 
   QrHistoryItem({
     required this.id,
@@ -23,6 +24,7 @@ class QrHistoryItem {
     required this.eyeStyle,
     required this.bodyStyle,
     required this.logoPosition,
+    this.logoPath,
   });
 
   Map<String, dynamic> toJson() => {
@@ -34,6 +36,7 @@ class QrHistoryItem {
     'eyeStyle': eyeStyle.name,
     'bodyStyle': bodyStyle.name,
     'logoPosition': logoPosition.name,
+    if (logoPath != null) 'logoPath': logoPath,
   };
 
   factory QrHistoryItem.fromJson(Map<String, dynamic> json) => QrHistoryItem(
@@ -54,6 +57,7 @@ class QrHistoryItem {
       (e) => e.name == json['logoPosition'],
       orElse: () => PrettyQrDecorationImagePosition.embedded,
     ),
+    logoPath: json['logoPath'] as String?,
   );
 
   String toJsonString() => jsonEncode(toJson());

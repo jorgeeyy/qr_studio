@@ -1,4 +1,7 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:qr_studio/models/qr_history_item.dart';
 import 'package:qr_studio/screens/main/result_screen.dart';
@@ -220,9 +223,23 @@ class CreateScreenState extends State<CreateScreen> {
                               _qrData.startsWith('https://')
                           ? _qrData
                           : 'https://$_qrData';
+                      final id = DateTime.now().millisecondsSinceEpoch
+                          .toString();
+                      String? logoPath;
+                      if (!kIsWeb && _logoImage is FileImage) {
+                        try {
+                          final src = (_logoImage as FileImage).file;
+                          final dir = await getApplicationDocumentsDirectory();
+                          final logoDir = Directory('${dir.path}/qr_logos');
+                          await logoDir.create(recursive: true);
+                          final dest = '${logoDir.path}/$id.png';
+                          await src.copy(dest);
+                          logoPath = dest;
+                        } catch (_) {}
+                      }
                       await QrHistoryService.addItem(
                         QrHistoryItem(
-                          id: DateTime.now().millisecondsSinceEpoch.toString(),
+                          id: id,
                           qrData: normalizedData,
                           createdAt: DateTime.now(),
                           foregroundColor: _foregroundColor,
@@ -230,6 +247,7 @@ class CreateScreenState extends State<CreateScreen> {
                           eyeStyle: _eyeStyle,
                           bodyStyle: _bodyStyle,
                           logoPosition: _logoPosition,
+                          logoPath: logoPath,
                         ),
                       );
                       setState(() {
