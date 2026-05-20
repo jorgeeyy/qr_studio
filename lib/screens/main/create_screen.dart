@@ -81,6 +81,12 @@ class CreateScreenState extends State<CreateScreen> {
                         padding: const EdgeInsets.all(8.0),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: isSelected
+                                ? Colors.blue[600]!
+                                : Theme.of(context).colorScheme.outlineVariant,
+                            width: 1.5,
+                          ),
                           color: isSelected
                               ? Colors.blue[600]
                               : Theme.of(

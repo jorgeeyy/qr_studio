@@ -52,8 +52,16 @@ class Preview extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16.0),
       width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outlineVariant,
+          width: 1.5,
+        ),
+      ),
       // height: 200,
-      color: Theme.of(context).colorScheme.surface,
+      // color: Theme.of(context).colorScheme.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -70,8 +78,9 @@ class Preview extends StatelessWidget {
             width: double.infinity,
             height: 150,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(20),
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              // color: Colors.grey[500],
             ),
             child: Center(
               child: qrData.trim().isEmpty

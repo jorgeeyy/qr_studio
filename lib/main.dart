@@ -22,10 +22,11 @@ class _MyAppState extends State<MyApp> {
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         colorScheme: ColorScheme.dark(
-          primary: Colors.blue[400]!,
-          secondary: Colors.blue[300]!,
+          primary: Colors.blue[600]!,
+          secondary: Colors.blue[500]!,
           surface: const Color(0xFF1E1E1E),
-          outlineVariant: const Color(0xFF3A3A3A), // ← add this
+          outlineVariant: const Color(0xFF3A3A3A),
+          surfaceContainerHighest: const Color(0xFF2C2C2C),
         ),
         scaffoldBackgroundColor: const Color(0xFF121212),
         appBarTheme: const AppBarTheme(

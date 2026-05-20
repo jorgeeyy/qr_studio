@@ -225,7 +225,7 @@ class _ResultScreenState extends State<ResultScreen> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+                  color: Colors.grey[500],
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -233,16 +233,12 @@ class _ResultScreenState extends State<ResultScreen> {
               Container(
                 padding: const EdgeInsets.all(8.0),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withValues(alpha: 0.2),
-                      spreadRadius: 2,
-                      blurRadius: 5,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                    width: 1.5,
+                  ),
                 ),
                 child: RepaintBoundary(
                   key: _qrKey,
@@ -282,8 +278,12 @@ class _ResultScreenState extends State<ResultScreen> {
               Container(
                 padding: const EdgeInsets.all(12.0),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                    width: 1.5,
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -292,7 +292,7 @@ class _ResultScreenState extends State<ResultScreen> {
                       'export options'.toUpperCase(),
                       style: TextStyle(
                         fontSize: 16,
-                        color: Colors.black,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -301,8 +301,8 @@ class _ResultScreenState extends State<ResultScreen> {
                       'File Format',
                       style: TextStyle(
                         fontSize: 15,
-                        color: Colors.black54,
-                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSurface,
+                        // fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(height: 3),
@@ -318,8 +318,8 @@ class _ResultScreenState extends State<ResultScreen> {
                             style: ElevatedButton.styleFrom(
                               elevation: 0,
                               backgroundColor: _selectedFormat == 'PNG'
-                                  ? Colors.blue[700]
-                                  : Colors.grey[200],
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Colors.grey[700],
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
@@ -348,8 +348,8 @@ class _ResultScreenState extends State<ResultScreen> {
                             style: ElevatedButton.styleFrom(
                               elevation: 0,
                               backgroundColor: _selectedFormat == 'SVG'
-                                  ? Colors.blue[700]
-                                  : Colors.grey[200],
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Colors.grey[700],
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
@@ -378,8 +378,8 @@ class _ResultScreenState extends State<ResultScreen> {
                             style: ElevatedButton.styleFrom(
                               elevation: 0,
                               backgroundColor: _selectedFormat == 'PDF'
-                                  ? Colors.blue[700]
-                                  : Colors.grey[200],
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Colors.grey[700],
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
@@ -425,7 +425,7 @@ class _ResultScreenState extends State<ResultScreen> {
                     ),
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
-                      backgroundColor: Colors.blue[800],
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 40,
                         vertical: 15,
@@ -440,7 +440,9 @@ class _ResultScreenState extends State<ResultScreen> {
                     onPressed: _shareImage,
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
-                      backgroundColor: Colors.grey[300],
+                      backgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 40,
                         vertical: 15,
@@ -452,7 +454,7 @@ class _ResultScreenState extends State<ResultScreen> {
                     child: Icon(
                       Icons.share_outlined,
                       size: 24,
-                      color: Colors.blue[800],
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                 ],
@@ -471,7 +473,7 @@ class _ResultScreenState extends State<ResultScreen> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.blue[800],
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
               ),

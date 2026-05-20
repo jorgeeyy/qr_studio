@@ -8,8 +8,12 @@ class DigitalExperience extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: Colors.black87,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      // color: Colors.grey[900],
+      color: Theme.of(context).colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+      ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(30, 20, 30, 20),
         child: Row(
@@ -23,13 +27,16 @@ class DigitalExperience extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   SizedBox(height: 8),
                   Text(
                     'Create high-precision, \ncustomized QR codes \nfor your brand in \nseconds.',
-                    style: TextStyle(fontSize: 14, color: Colors.white70),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                   SizedBox(height: 12),
                   ElevatedButton(

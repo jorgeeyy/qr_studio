@@ -40,21 +40,21 @@ class QuickGenerateIcons extends StatelessWidget {
               'Quick Generate',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            const Spacer(),
-            TextButton(
-              onPressed: () {},
-              child: Text(
-                'View All',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue[700],
-                ),
-              ),
-            ),
+            // const Spacer(),
+            // TextButton(
+            //   onPressed: () {},
+            //   child: Text(
+            //     'View All',
+            //     style: TextStyle(
+            //       fontSize: 14,
+            //       fontWeight: FontWeight.bold,
+            //       color: Colors.blue[700],
+            //     ),
+            //   ),
+            // ),
           ],
         ),
-        SizedBox(height: 10),
+        // SizedBox(height: 10),
         SizedBox(
           height: 130,
           child: ListView.separated(
@@ -70,8 +70,12 @@ class QuickGenerateIcons extends StatelessWidget {
                   width: 120,
                   child: Card(
                     color: Theme.of(context).colorScheme.surface,
+                    // color: Colors.grey[900],
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
+                      side: BorderSide(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
                     ),
                     elevation: 0.1,
                     child: Padding(

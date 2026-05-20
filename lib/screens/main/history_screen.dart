@@ -67,7 +67,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   PrettyQrShape _getShape(QrStyle style, Color color) {
     switch (style) {
       case QrStyle.rounded:
-        return PrettyQrRoundedSymbol(color: color);
+        return PrettyQrSquaresSymbol(color: color);
       case QrStyle.dots:
         return PrettyQrSmoothSymbol(color: color, roundFactor: 1);
       case QrStyle.smooth:
@@ -81,9 +81,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
       case QrStyle.leaf:
         return QrLeafShape(color: color);
       case QrStyle.square:
-        return PrettyQrRoundedSymbol(
+        return PrettyQrSquaresSymbol(
           color: color,
-          borderRadius: BorderRadius.zero,
+          // borderRadius: BorderRadius.zero,
         );
     }
   }
@@ -107,12 +107,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  const Text(
-                    'History',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  const Spacer(),
                   if (_items.isNotEmpty)
                     TextButton.icon(
                       onPressed: _clearAll,
@@ -170,7 +166,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       onRefresh: _loadHistory,
       child: ListView.separated(
         itemCount: _items.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 10),
+        separatorBuilder: (_, _) => const SizedBox(height: 10),
         itemBuilder: (context, index) {
           final item = _items[index];
           return _HistoryCard(
@@ -218,14 +214,9 @@ class _HistoryCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.1),
-              spreadRadius: 1,
-              blurRadius: 5,
-              offset: const Offset(0, 3),
-            ),
-          ],
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
         ),
         child: Row(
           children: [

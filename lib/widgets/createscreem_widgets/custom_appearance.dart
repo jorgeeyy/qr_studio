@@ -61,15 +61,14 @@ class _CustomAppearanceState extends State<CustomAppearance> {
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.0)),
+        side: BorderSide(color: Colors.transparent), // Remove default border
       ),
       isScrollControlled:
           true, // Allows sheet to size properly and avoid keyboard/compact screen issues
       builder: (BuildContext context) {
         final screenHeight = MediaQuery.sizeOf(context).height;
         final isSmallScreen = screenHeight < 700;
-
         Color selectedColor = initialColor;
-
         return SafeArea(
           child: Container(
             padding: const EdgeInsets.only(
@@ -131,8 +130,14 @@ class _CustomAppearanceState extends State<CustomAppearance> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.0)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(30.0)),
+        side: BorderSide(
+          color: Theme.of(
+            context,
+          ).colorScheme.outlineVariant.withValues(alpha: 0.5),
+          width: 1.5,
+        ),
       ),
       builder: (BuildContext context) {
         return SafeArea(
@@ -322,8 +327,11 @@ class _CustomAppearanceState extends State<CustomAppearance> {
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey[700]!, width: 1.5),
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outlineVariant,
+            width: 1.5,
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.03),
@@ -372,14 +380,7 @@ class _CustomAppearanceState extends State<CustomAppearance> {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.2),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       padding: const EdgeInsets.all(24.0),
       child: Column(
