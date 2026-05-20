@@ -198,6 +198,15 @@ class _HistoryCard extends StatelessWidget {
     required this.onDelete,
   });
 
+  String _qrLabel(String qrData) {
+    if (qrData.startsWith('WIFI:')) {
+      final match = RegExp(r'S:([^;]+)').firstMatch(qrData);
+      final ssid = match?.group(1) ?? '';
+      return 'WiFi · $ssid';
+    }
+    return qrData;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dismissible(
@@ -258,7 +267,7 @@ class _HistoryCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    item.qrData,
+                    _qrLabel(item.qrData),
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,

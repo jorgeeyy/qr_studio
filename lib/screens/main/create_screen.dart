@@ -9,6 +9,7 @@ import 'package:qr_studio/services/qr_history_service.dart';
 import 'package:qr_studio/widgets/createscreem_widgets/custom_appearance.dart';
 import 'package:qr_studio/widgets/createscreem_widgets/preview.dart';
 import 'package:qr_studio/widgets/createscreem_widgets/url_create.dart';
+import 'package:qr_studio/widgets/createscreem_widgets/wifi_create.dart';
 import 'package:qr_studio/utils/qr_shapes.dart';
 
 enum QrCreateType { website, wifi, contact }
@@ -26,7 +27,11 @@ class CreateScreenState extends State<CreateScreen> {
   final TextEditingController _urlController = TextEditingController();
 
   late QrCreateType _selectedType;
+  // Website state
   String _qrData = '';
+  // WiFi state
+  String _wifiQrData = '';
+  // Shared appearance state
   Color _foregroundColor = Colors.black;
   Color _backgroundColor = Colors.white;
   QrStyle _eyeStyle = QrStyle.square;
@@ -280,6 +285,148 @@ class CreateScreenState extends State<CreateScreen> {
                       SizedBox(width: 8),
                       Text(
                         'GENERATE CODE',
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+              ] else if (_selectedType == QrCreateType.wifi) ...[
+                Preview(
+                  qrData: _wifiQrData,
+                  foregroundColor: _foregroundColor,
+                  backgroundColor: _backgroundColor,
+                  eyeStyle: _eyeStyle,
+                  bodyStyle: _bodyStyle,
+                  logoImage: _logoImage,
+                  logoPosition: _logoPosition,
+                ),
+                SizedBox(height: 10),
+                WifiCreate(
+                  onChanged: (value) => setState(() => _wifiQrData = value),
+                ),
+                SizedBox(height: 20),
+                CustomAppearance(
+                  foregroundColor: _foregroundColor,
+                  backgroundColor: _backgroundColor,
+                  eyeStyle: _eyeStyle,
+                  bodyStyle: _bodyStyle,
+                  onForegroundChanged: (c) =>
+                      setState(() => _foregroundColor = c),
+                  onBackgroundChanged: (c) =>
+                      setState(() => _backgroundColor = c),
+                  onEyeShapeChanged: (r) => setState(() => _eyeStyle = r),
+                  onBodyShapeChanged: (r) => setState(() => _bodyStyle = r),
+                  onLogoChanged: (img) => setState(() => _logoImage = img),
+                  onLogoPositionChanged: (pos) =>
+                      setState(() => _logoPosition = pos),
+                  logoPosition: _logoPosition,
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (_wifiQrData.trim().isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Row(
+                            children: [
+                              const Icon(
+                                Icons.error_outline,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(width: 12),
+                              const Expanded(
+                                child: Text(
+                                  'Please fill in the network name first',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          backgroundColor: Colors.red[700],
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          margin: const EdgeInsets.all(16),
+                          elevation: 6,
+                        ),
+                      );
+                      return;
+                    }
+                    final shouldReset = await Navigator.push<bool>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ResultScreen(
+                          qrData: _wifiQrData,
+                          foregroundColor: _foregroundColor,
+                          backgroundColor: _backgroundColor,
+                          eyeStyle: _eyeStyle,
+                          bodyStyle: _bodyStyle,
+                          logoImage: _logoImage,
+                          logoPosition: _logoPosition,
+                        ),
+                      ),
+                    );
+                    if (shouldReset == true) {
+                      final id = DateTime.now().millisecondsSinceEpoch
+                          .toString();
+                      String? logoPath;
+                      if (!kIsWeb && _logoImage is FileImage) {
+                        try {
+                          final src = (_logoImage as FileImage).file;
+                          final dir = await getApplicationDocumentsDirectory();
+                          final logoDir = Directory('${dir.path}/qr_logos');
+                          await logoDir.create(recursive: true);
+                          final dest = '${logoDir.path}/$id.png';
+                          await src.copy(dest);
+                          logoPath = dest;
+                        } catch (_) {}
+                      }
+                      await QrHistoryService.addItem(
+                        QrHistoryItem(
+                          id: id,
+                          qrData: _wifiQrData,
+                          createdAt: DateTime.now(),
+                          foregroundColor: _foregroundColor,
+                          backgroundColor: _backgroundColor,
+                          eyeStyle: _eyeStyle,
+                          bodyStyle: _bodyStyle,
+                          logoPosition: _logoPosition,
+                          logoPath: logoPath,
+                        ),
+                      );
+                      setState(() {
+                        _wifiQrData = '';
+                        _foregroundColor = Colors.black;
+                        _backgroundColor = Colors.black;
+                        _eyeStyle = QrStyle.square;
+                        _bodyStyle = QrStyle.square;
+                        _logoImage = null;
+                        _logoPosition =
+                            PrettyQrDecorationImagePosition.embedded;
+                      });
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal[600],
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 40,
+                      vertical: 15,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.wifi, size: 24, color: Colors.white),
+                      SizedBox(width: 8),
+                      Text(
+                        'GENERATE WIFI QR',
                         style: TextStyle(fontSize: 16, color: Colors.white),
                       ),
                     ],

@@ -161,7 +161,7 @@ class RecentCodesState extends State<RecentCodes> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          item.qrData,
+                          _qrLabel(item.qrData),
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
@@ -228,6 +228,15 @@ class RecentCodesState extends State<RecentCodes> {
       case QrStyle.square:
         return PrettyQrSquaresSymbol(color: color);
     }
+  }
+
+  String _qrLabel(String qrData) {
+    if (qrData.startsWith('WIFI:')) {
+      final match = RegExp(r'S:([^;]+)').firstMatch(qrData);
+      final ssid = match?.group(1) ?? '';
+      return 'WiFi · $ssid';
+    }
+    return qrData;
   }
 
   String _formatDate(DateTime dt) {
