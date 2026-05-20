@@ -11,10 +11,10 @@ class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
 
   @override
-  State<HistoryScreen> createState() => _HistoryScreenState();
+  State<HistoryScreen> createState() => HistoryScreenState();
 }
 
-class _HistoryScreenState extends State<HistoryScreen> {
+class HistoryScreenState extends State<HistoryScreen> {
   List<QrHistoryItem> _items = [];
   bool _loading = true;
 
@@ -33,6 +33,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
       });
     }
   }
+
+  void reload() => _loadHistory();
 
   Future<void> _deleteItem(String id) async {
     await QrHistoryService.deleteItem(id);

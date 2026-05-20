@@ -40,21 +40,9 @@ class QuickGenerateIcons extends StatelessWidget {
               'Quick Generate',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            // const Spacer(),
-            // TextButton(
-            //   onPressed: () {},
-            //   child: Text(
-            //     'View All',
-            //     style: TextStyle(
-            //       fontSize: 14,
-            //       fontWeight: FontWeight.bold,
-            //       color: Colors.blue[700],
-            //     ),
-            //   ),
-            // ),
           ],
         ),
-        // SizedBox(height: 10),
+        SizedBox(height: 10),
         SizedBox(
           height: 130,
           child: ListView.separated(

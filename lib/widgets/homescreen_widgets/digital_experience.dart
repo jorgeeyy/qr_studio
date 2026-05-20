@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 class DigitalExperience extends StatelessWidget {
-  const DigitalExperience({super.key, required this.onStartScanning});
+  const DigitalExperience({super.key, required this.onCreateType});
 
-  final VoidCallback onStartScanning;
+  final VoidCallback onCreateType;
 
   @override
   Widget build(BuildContext context) {
@@ -33,14 +33,11 @@ class DigitalExperience extends StatelessWidget {
                   SizedBox(height: 8),
                   Text(
                     'Create high-precision, \ncustomized QR codes \nfor your brand in \nseconds.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                   ),
                   SizedBox(height: 12),
                   ElevatedButton(
-                    onPressed: onStartScanning,
+                    onPressed: onCreateType,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue[800],
                       shape: RoundedRectangleBorder(
@@ -48,7 +45,7 @@ class DigitalExperience extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      'Start Scanning',
+                      'Start Creating',
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,

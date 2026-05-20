@@ -1,6 +1,11 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:qr_studio/models/qr_history_item.dart';
 import 'package:qr_studio/services/qr_history_service.dart';
+import 'package:qr_studio/utils/qr_shapes.dart';
+import 'package:qr_studio/utils/custom_qr_shapes.dart';
 
 class RecentCodes extends StatefulWidget {
   const RecentCodes({super.key, required this.onHistory});
@@ -8,10 +13,10 @@ class RecentCodes extends StatefulWidget {
   final VoidCallback onHistory;
 
   @override
-  State<RecentCodes> createState() => _RecentCodesState();
+  State<RecentCodes> createState() => RecentCodesState();
 }
 
-class _RecentCodesState extends State<RecentCodes> {
+class RecentCodesState extends State<RecentCodes> {
   List<QrHistoryItem> _items = [];
 
   @override
@@ -34,6 +39,8 @@ class _RecentCodesState extends State<RecentCodes> {
       });
     }
   }
+
+  void reload() => _loadRecent();
 
   @override
   Widget build(BuildContext context) {
@@ -109,60 +116,89 @@ class _RecentCodesState extends State<RecentCodes> {
           separatorBuilder: (context, index) => SizedBox(height: 10),
           itemBuilder: (context, index) {
             final item = _items[index];
-            final date = _formatDate(item.createdAt);
-
             return Container(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withValues(alpha: 0.1),
-                    spreadRadius: 1,
-                    blurRadius: 5,
-                    offset: Offset(0, 3),
-                  ),
-                ],
                 color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outlineVariant,
+                ),
               ),
               child: Row(
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.blue.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(5),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: SizedBox(
+                      width: 64,
+                      height: 64,
+                      child: PrettyQrView.data(
+                        data: item.qrData,
+                        decoration: PrettyQrDecoration(
+                          // ignore: experimental_api
+                          shape: PrettyQrShape.custom(
+                            _getShape(item.bodyStyle, item.foregroundColor),
+                            finderPattern: _getShape(
+                              item.eyeStyle,
+                              item.foregroundColor,
+                            ),
+                          ),
+                          background: item.backgroundColor,
+                          image: (!kIsWeb && item.logoPath != null)
+                              ? PrettyQrDecorationImage(
+                                  image: FileImage(File(item.logoPath!)),
+                                  scale: 0.35,
+                                  position: item.logoPosition,
+                                )
+                              : null,
+                        ),
+                      ),
                     ),
-                    padding: EdgeInsets.all(8),
-                    child: Icon(Icons.qr_code_2, size: 30, color: Colors.blue),
                   ),
-                  SizedBox(width: 20),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           item.qrData,
-                          style: TextStyle(
-                            fontSize: 16,
+                          style: const TextStyle(
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
+                        const SizedBox(height: 4),
                         Text(
-                          'QR Code · $date',
+                          _formatDate(item.createdAt),
                           style: TextStyle(
                             fontSize: 12,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant,
+                            color: Colors.grey[500],
                           ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            _ColorDot(color: item.foregroundColor),
+                            const SizedBox(width: 4),
+                            _ColorDot(
+                              color: item.backgroundColor,
+                              bordered: true,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              item.bodyStyle.name,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey[400],
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                  IconButton(onPressed: () {}, icon: Icon(Icons.more_vert)),
                 ],
               ),
             );
@@ -172,6 +208,28 @@ class _RecentCodesState extends State<RecentCodes> {
     );
   }
 
+  // ignore: experimental_api
+  PrettyQrShape _getShape(QrStyle style, Color color) {
+    switch (style) {
+      case QrStyle.rounded:
+        return PrettyQrSquaresSymbol(color: color);
+      case QrStyle.dots:
+        return PrettyQrSmoothSymbol(color: color, roundFactor: 1);
+      case QrStyle.smooth:
+        return PrettyQrSmoothSymbol(color: color);
+      case QrStyle.diamond:
+        return QrDiamondShape(color: color);
+      case QrStyle.star:
+        return QrStarShape(color: color);
+      case QrStyle.hexagon:
+        return QrHexagonShape(color: color);
+      case QrStyle.leaf:
+        return QrLeafShape(color: color);
+      case QrStyle.square:
+        return PrettyQrSquaresSymbol(color: color);
+    }
+  }
+
   String _formatDate(DateTime dt) {
     final now = DateTime.now();
     final diff = now.difference(dt);
@@ -179,5 +237,26 @@ class _RecentCodesState extends State<RecentCodes> {
     if (diff.inDays == 1) return 'Yesterday';
     if (diff.inDays < 7) return '${diff.inDays}d ago';
     return '${dt.day}/${dt.month}/${dt.year}';
+  }
+}
+
+class _ColorDot extends StatelessWidget {
+  final Color color;
+  final bool bordered;
+  const _ColorDot({required this.color, this.bordered = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 14,
+      height: 14,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        border: bordered
+            ? Border.all(color: Colors.grey[700]!, width: 1)
+            : null,
+      ),
+    );
   }
 }

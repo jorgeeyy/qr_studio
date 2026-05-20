@@ -18,6 +18,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   final _createScreenKey = GlobalKey<CreateScreenState>();
+  final _historyScreenKey = GlobalKey<HistoryScreenState>();
+  final _recentCodesKey = GlobalKey<RecentCodesState>();
 
   late final List<Widget> _screens = [
     _HomeTab(
@@ -27,10 +29,11 @@ class _HomeScreenState extends State<HomeScreen> {
         _createScreenKey.currentState?.setType(type);
         _onNavTapped(1);
       },
+      recentCodesKey: _recentCodesKey,
     ),
     CreateScreen(key: _createScreenKey),
     const ScanScreen(),
-    const HistoryScreen(),
+    HistoryScreen(key: _historyScreenKey),
     const ProfileScreen(),
   ];
 
@@ -43,6 +46,13 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   void _onNavTapped(int index) {
+    // Leaving create tab — a QR may have just been saved
+    if (_currentIndex == 1 && index != 1) {
+      _recentCodesKey.currentState?.reload();
+      _historyScreenKey.currentState?.reload();
+    }
+    if (index == 0) _recentCodesKey.currentState?.reload();
+    if (index == 3) _historyScreenKey.currentState?.reload();
     setState(() {
       _currentIndex = index;
     });
@@ -73,97 +83,90 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-        child: Material(
-          elevation: 15,
-          borderRadius: BorderRadius.circular(36),
-          clipBehavior: Clip.antiAlias,
-          color: Theme.of(context).colorScheme.surface,
-          child: BottomNavigationBar(
-            type: BottomNavigationBarType.fixed,
-            currentIndex: _currentIndex,
-            selectedItemColor: Colors.blue,
-            unselectedItemColor: Colors.grey,
-            backgroundColor: Colors.transparent,
-            showSelectedLabels: true,
-            showUnselectedLabels: false,
-            selectedFontSize: 0,
-            unselectedFontSize: 0,
-            elevation: 0,
-            items: [
-              // BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home',),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home),
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Material(
+              elevation: 0,
+              borderRadius: BorderRadius.circular(36),
+              clipBehavior: Clip.antiAlias,
+              color: Theme.of(context).colorScheme.surface,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 8,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _NavItem(
+                      icon: Icons.home,
+                      index: 0,
+                      current: _currentIndex,
+                      onTap: _onNavTapped,
+                    ),
+                    _NavItem(
+                      icon: Icons.add_box_outlined,
+                      index: 1,
+                      current: _currentIndex,
+                      onTap: _onNavTapped,
+                    ),
+                    _NavItem(
+                      icon: Icons.qr_code_scanner_outlined,
+                      index: 2,
+                      current: _currentIndex,
+                      onTap: _onNavTapped,
+                    ),
+                    _NavItem(
+                      icon: Icons.history,
+                      index: 3,
+                      current: _currentIndex,
+                      onTap: _onNavTapped,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
-                activeIcon: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: const Icon(Icons.home, color: Colors.white),
-                ),
+class _NavItem extends StatelessWidget {
+  const _NavItem({
+    required this.icon,
+    required this.index,
+    required this.current,
+    required this.onTap,
+  });
 
-                label: 'Home',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.add_box_outlined),
-                activeIcon: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: const Icon(
-                    Icons.add_box_outlined,
-                    color: Colors.white,
-                  ),
-                ),
+  final IconData icon;
+  final int index;
+  final int current;
+  final ValueChanged<int> onTap;
 
-                label: 'Create',
-                backgroundColor: Colors.red,
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.qr_code_scanner_outlined),
-                activeIcon: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: const Icon(
-                    Icons.qr_code_scanner_outlined,
-                    color: Colors.white,
-                  ),
-                ),
-                label: 'Scan',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.history),
-                activeIcon: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: const Icon(Icons.history, color: Colors.white),
-                ),
-                label: 'History',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.person),
-                activeIcon: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: const Icon(Icons.person, color: Colors.white),
-                ),
-                label: 'Profile',
-              ),
-            ],
-            onTap: _onNavTapped,
+  @override
+  Widget build(BuildContext context) {
+    final selected = index == current;
+    return GestureDetector(
+      onTap: () => onTap(index),
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: selected ? Colors.blue : Colors.transparent,
+            borderRadius: BorderRadius.circular(50),
+          ),
+          child: Icon(
+            icon,
+            color: selected ? Colors.white : Colors.grey,
+            size: 24,
           ),
         ),
       ),
@@ -176,11 +179,13 @@ class _HomeTab extends StatelessWidget {
     required this.onStartScanning,
     required this.onHistory,
     required this.onCreateType,
+    required this.recentCodesKey,
   });
 
   final VoidCallback onStartScanning;
   final VoidCallback onHistory;
   final ValueChanged<QrCreateType> onCreateType;
+  final GlobalKey<RecentCodesState> recentCodesKey;
 
   @override
   Widget build(BuildContext context) {
@@ -191,9 +196,11 @@ class _HomeTab extends StatelessWidget {
           children: [
             QuickGenerateIcons(onTypeTap: onCreateType),
             const SizedBox(height: 20),
-            DigitalExperience(onStartScanning: onStartScanning),
+            DigitalExperience(
+              onCreateType: () => onCreateType(QrCreateType.website),
+            ),
             const SizedBox(height: 20),
-            RecentCodes(onHistory: onHistory),
+            RecentCodes(key: recentCodesKey, onHistory: onHistory),
           ],
         ),
       ),
