@@ -6,6 +6,7 @@ import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:qr_studio/models/qr_history_item.dart';
 import 'package:qr_studio/screens/main/result_screen.dart';
 import 'package:qr_studio/services/qr_history_service.dart';
+import 'package:qr_studio/widgets/createscreem_widgets/contact_create.dart';
 import 'package:qr_studio/widgets/createscreem_widgets/custom_appearance.dart';
 import 'package:qr_studio/widgets/createscreem_widgets/preview.dart';
 import 'package:qr_studio/widgets/createscreem_widgets/url_create.dart';
@@ -31,6 +32,8 @@ class CreateScreenState extends State<CreateScreen> {
   String _qrData = '';
   // WiFi state
   String _wifiQrData = '';
+  // Contact state
+  String _contactQrData = '';
   // Shared appearance state
   Color _foregroundColor = Colors.black;
   Color _backgroundColor = Colors.white;
@@ -61,11 +64,7 @@ class CreateScreenState extends State<CreateScreen> {
     final createData = [
       (icon: Icons.language, title: 'Website', type: QrCreateType.website),
       (icon: Icons.wifi, title: 'WiFi', type: QrCreateType.wifi),
-      (
-        icon: Icons.contact_page_outlined,
-        title: 'Contact',
-        type: QrCreateType.contact,
-      ),
+      (icon: Icons.campaign, title: 'Socials', type: QrCreateType.contact),
     ];
 
     return Scaffold(
@@ -432,54 +431,156 @@ class CreateScreenState extends State<CreateScreen> {
                     ],
                   ),
                 ),
-              ] else
-                _ComingSoonPlaceholder(type: _selectedType),
+              ] else if (_selectedType == QrCreateType.contact) ...[
+                Preview(
+                  qrData: _contactQrData,
+                  foregroundColor: _foregroundColor,
+                  backgroundColor: _backgroundColor,
+                  eyeStyle: _eyeStyle,
+                  bodyStyle: _bodyStyle,
+                  logoImage: _logoImage,
+                  logoPosition: _logoPosition,
+                ),
+                SizedBox(height: 10),
+                ContactCreate(
+                  onChanged: (value) => setState(() => _contactQrData = value),
+                ),
+                SizedBox(height: 20),
+                CustomAppearance(
+                  foregroundColor: _foregroundColor,
+                  backgroundColor: _backgroundColor,
+                  eyeStyle: _eyeStyle,
+                  bodyStyle: _bodyStyle,
+                  onForegroundChanged: (c) =>
+                      setState(() => _foregroundColor = c),
+                  onBackgroundChanged: (c) =>
+                      setState(() => _backgroundColor = c),
+                  onEyeShapeChanged: (r) => setState(() => _eyeStyle = r),
+                  onBodyShapeChanged: (r) => setState(() => _bodyStyle = r),
+                  onLogoChanged: (img) => setState(() => _logoImage = img),
+                  onLogoPositionChanged: (pos) =>
+                      setState(() => _logoPosition = pos),
+                  logoPosition: _logoPosition,
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (_contactQrData.trim().isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Row(
+                            children: [
+                              const Icon(
+                                Icons.error_outline,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(width: 12),
+                              const Expanded(
+                                child: Text(
+                                  'Please enter your username first',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          backgroundColor: Colors.red[700],
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          margin: const EdgeInsets.all(16),
+                          elevation: 6,
+                        ),
+                      );
+                      return;
+                    }
+                    final shouldReset = await Navigator.push<bool>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ResultScreen(
+                          qrData: _contactQrData,
+                          foregroundColor: _foregroundColor,
+                          backgroundColor: _backgroundColor,
+                          eyeStyle: _eyeStyle,
+                          bodyStyle: _bodyStyle,
+                          logoImage: _logoImage,
+                          logoPosition: _logoPosition,
+                        ),
+                      ),
+                    );
+                    if (shouldReset == true) {
+                      final id = DateTime.now().millisecondsSinceEpoch
+                          .toString();
+                      String? logoPath;
+                      if (!kIsWeb && _logoImage is FileImage) {
+                        try {
+                          final src = (_logoImage as FileImage).file;
+                          final dir = await getApplicationDocumentsDirectory();
+                          final logoDir = Directory('${dir.path}/qr_logos');
+                          await logoDir.create(recursive: true);
+                          final dest = '${logoDir.path}/$id.png';
+                          await src.copy(dest);
+                          logoPath = dest;
+                        } catch (_) {}
+                      }
+                      await QrHistoryService.addItem(
+                        QrHistoryItem(
+                          id: id,
+                          qrData: _contactQrData,
+                          createdAt: DateTime.now(),
+                          foregroundColor: _foregroundColor,
+                          backgroundColor: _backgroundColor,
+                          eyeStyle: _eyeStyle,
+                          bodyStyle: _bodyStyle,
+                          logoPosition: _logoPosition,
+                          logoPath: logoPath,
+                        ),
+                      );
+                      setState(() {
+                        _contactQrData = '';
+                        _foregroundColor = Colors.black;
+                        _backgroundColor = Colors.black;
+                        _eyeStyle = QrStyle.square;
+                        _bodyStyle = QrStyle.square;
+                        _logoImage = null;
+                        _logoPosition =
+                            PrettyQrDecorationImagePosition.embedded;
+                      });
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange[700],
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 40,
+                      vertical: 15,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.contact_page_outlined,
+                        size: 24,
+                        color: Colors.white,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'GENERATE SOCIAL QR',
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _ComingSoonPlaceholder extends StatelessWidget {
-  final QrCreateType type;
-  const _ComingSoonPlaceholder({required this.type});
-
-  @override
-  Widget build(BuildContext context) {
-    final isWifi = type == QrCreateType.wifi;
-    final icon = isWifi ? Icons.wifi : Icons.contact_page_outlined;
-    final label = isWifi ? 'WiFi' : 'Contact';
-    final color = isWifi ? Colors.teal : Colors.orange;
-
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(top: 40),
-      padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.07),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: color.withValues(alpha: 0.25), width: 1.5),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, size: 56, color: color.withValues(alpha: 0.6)),
-          const SizedBox(height: 16),
-          Text(
-            '$label QR Code',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: color.withValues(alpha: 0.8),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Coming soon',
-            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-          ),
-        ],
       ),
     );
   }

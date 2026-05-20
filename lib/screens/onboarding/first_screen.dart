@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:qr_studio/screens/onboarding/second_screen.dart';
 import 'package:qr_studio/screens/main/home_screen.dart';
 
@@ -17,13 +18,16 @@ class FirstScreen extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              // Navigate to the main screen, skipping onboarding
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => const HomeScreen()),
-                (route) => false,
-              );
+            onPressed: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('onboarding_complete', true);
+              if (context.mounted) {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HomeScreen()),
+                  (route) => false,
+                );
+              }
             },
             child: const Text(
               'Skip',

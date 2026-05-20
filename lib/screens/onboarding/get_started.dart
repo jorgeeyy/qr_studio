@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:qr_studio/screens/main/home_screen.dart';
 
 class GetStarted extends StatelessWidget {
@@ -53,15 +54,18 @@ class GetStarted extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),
-                  onPressed: () {
-                    // Navigate to the next onboarding screen
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const HomeScreen(),
-                      ),
-                      (route) => false,
-                    );
+                  onPressed: () async {
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.setBool('onboarding_complete', true);
+                    if (context.mounted) {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HomeScreen(),
+                        ),
+                        (route) => false,
+                      );
+                    }
                   },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,

@@ -236,6 +236,26 @@ class RecentCodesState extends State<RecentCodes> {
       final ssid = match?.group(1) ?? '';
       return 'WiFi · $ssid';
     }
+    const platforms = {
+      'instagram.com': 'Instagram',
+      'x.com': 'X / Twitter',
+      'facebook.com': 'Facebook',
+      'linkedin.com': 'LinkedIn',
+      'tiktok.com': 'TikTok',
+      'youtube.com': 'YouTube',
+      'snapchat.com': 'Snapchat',
+      'wa.me': 'WhatsApp',
+      't.me': 'Telegram',
+      'github.com': 'GitHub',
+    };
+    for (final entry in platforms.entries) {
+      if (qrData.contains(entry.key)) {
+        final uri = Uri.tryParse(qrData);
+        final parts = uri?.pathSegments.where((s) => s.isNotEmpty).toList();
+        final handle = (parts != null && parts.isNotEmpty) ? parts.last : '';
+        return '${entry.value} · $handle';
+      }
+    }
     return qrData;
   }
 

@@ -24,8 +24,8 @@ class QuickGenerateIcons extends StatelessWidget {
         type: QrCreateType.wifi,
       ),
       (
-        icon: Icons.contact_page_outlined,
-        title: 'Contact',
+        icon: Icons.campaign,
+        title: 'Socials',
         iconColor: Colors.orange[300]!,
         bgColor: Colors.orange.withValues(alpha: 0.15),
         type: QrCreateType.contact,

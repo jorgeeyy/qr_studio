@@ -204,6 +204,26 @@ class _HistoryCard extends StatelessWidget {
       final ssid = match?.group(1) ?? '';
       return 'WiFi · $ssid';
     }
+    const platforms = {
+      'instagram.com': 'Instagram',
+      'x.com': 'X / Twitter',
+      'facebook.com': 'Facebook',
+      'linkedin.com': 'LinkedIn',
+      'tiktok.com': 'TikTok',
+      'youtube.com': 'YouTube',
+      'snapchat.com': 'Snapchat',
+      'wa.me': 'WhatsApp',
+      't.me': 'Telegram',
+      'github.com': 'GitHub',
+    };
+    for (final entry in platforms.entries) {
+      if (qrData.contains(entry.key)) {
+        final uri = Uri.tryParse(qrData);
+        final parts = uri?.pathSegments.where((s) => s.isNotEmpty).toList();
+        final handle = (parts != null && parts.isNotEmpty) ? parts.last : '';
+        return '${entry.value} · $handle';
+      }
+    }
     return qrData;
   }
 
@@ -222,89 +242,167 @@ class _HistoryCard extends StatelessWidget {
         child: const Icon(Icons.delete, color: Colors.white),
       ),
       onDismissed: (_) => onDelete(),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outlineVariant,
+      child: GestureDetector(
+        onTap: () => _showQrDialog(context),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outlineVariant,
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: SizedBox(
-                width: 64,
-                height: 64,
-                child: PrettyQrView.data(
-                  data: item.qrData,
-                  decoration: PrettyQrDecoration(
-                    // ignore: experimental_api
-                    shape: PrettyQrShape.custom(
-                      getShape(item.bodyStyle, item.foregroundColor),
-                      finderPattern: getShape(
-                        item.eyeStyle,
-                        item.foregroundColor,
+          child: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: SizedBox(
+                  width: 64,
+                  height: 64,
+                  child: PrettyQrView.data(
+                    data: item.qrData,
+                    decoration: PrettyQrDecoration(
+                      // ignore: experimental_api
+                      shape: PrettyQrShape.custom(
+                        getShape(item.bodyStyle, item.foregroundColor),
+                        finderPattern: getShape(
+                          item.eyeStyle,
+                          item.foregroundColor,
+                        ),
                       ),
+                      background: item.backgroundColor,
+                      image: (!kIsWeb && item.logoPath != null)
+                          ? PrettyQrDecorationImage(
+                              image: FileImage(File(item.logoPath!)),
+                              scale: 0.35,
+                              position: item.logoPosition,
+                            )
+                          : null,
                     ),
-                    background: item.backgroundColor,
-                    image: (!kIsWeb && item.logoPath != null)
-                        ? PrettyQrDecorationImage(
-                            image: FileImage(File(item.logoPath!)),
-                            scale: 0.35,
-                            position: item.logoPosition,
-                          )
-                        : null,
                   ),
                 ),
               ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _qrLabel(item.qrData),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    formatDate(item.createdAt),
-                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      _ColorDot(color: item.foregroundColor),
-                      const SizedBox(width: 4),
-                      _ColorDot(color: item.backgroundColor, bordered: true),
-                      const SizedBox(width: 6),
-                      Text(
-                        item.bodyStyle.name,
-                        style: TextStyle(fontSize: 11, color: Colors.grey[400]),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _qrLabel(item.qrData),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
                       ),
-                    ],
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      formatDate(item.createdAt),
+                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        _ColorDot(color: item.foregroundColor),
+                        const SizedBox(width: 4),
+                        _ColorDot(color: item.backgroundColor, bordered: true),
+                        const SizedBox(width: 6),
+                        Text(
+                          item.bodyStyle.name,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey[400],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: Icon(
+                  Icons.delete_outline,
+                  color: Colors.grey[400],
+                  size: 20,
+                ),
+                onPressed: onDelete,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showQrDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      _qrLabel(item.qrData),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
                   ),
                 ],
               ),
-            ),
-            IconButton(
-              icon: Icon(
-                Icons.delete_outline,
-                color: Colors.grey[400],
-                size: 20,
+              const SizedBox(height: 16),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: SizedBox(
+                  width: 240,
+                  height: 240,
+                  child: PrettyQrView.data(
+                    data: item.qrData,
+                    decoration: PrettyQrDecoration(
+                      // ignore: experimental_api
+                      shape: PrettyQrShape.custom(
+                        getShape(item.bodyStyle, item.foregroundColor),
+                        finderPattern: getShape(
+                          item.eyeStyle,
+                          item.foregroundColor,
+                        ),
+                      ),
+                      background: item.backgroundColor,
+                      image: (!kIsWeb && item.logoPath != null)
+                          ? PrettyQrDecorationImage(
+                              image: FileImage(File(item.logoPath!)),
+                              scale: 0.35,
+                              position: item.logoPosition,
+                            )
+                          : null,
+                    ),
+                  ),
+                ),
               ),
-              onPressed: onDelete,
-            ),
-          ],
+              const SizedBox(height: 16),
+              Text(
+                formatDate(item.createdAt),
+                style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+              ),
+            ],
+          ),
         ),
       ),
     );

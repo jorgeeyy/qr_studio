@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:qr_studio/screens/main/home_screen.dart';
 import 'package:qr_studio/screens/onboarding/first_screen.dart';
 
 void main() {
@@ -13,6 +15,21 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  bool? _onboardingComplete;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkOnboarding();
+  }
+
+  Future<void> _checkOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -60,7 +77,11 @@ class _MyAppState extends State<MyApp> {
         dividerColor: const Color(0xFF2C2C2C),
       ),
       themeMode: ThemeMode.dark,
-      home: const FirstScreen(),
+      home: _onboardingComplete == null
+          ? const Scaffold(body: SizedBox.shrink())
+          : _onboardingComplete!
+          ? const HomeScreen()
+          : const FirstScreen(),
     );
   }
 }
