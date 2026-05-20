@@ -1,17 +1,10 @@
-import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
-import 'package:qr_studio/models/qr_history_item.dart';
-import 'package:qr_studio/screens/main/result_screen.dart';
-import 'package:qr_studio/services/qr_history_service.dart';
+import 'package:qr_studio/utils/qr_shapes.dart';
 import 'package:qr_studio/widgets/createscreem_widgets/contact_create.dart';
-import 'package:qr_studio/widgets/createscreem_widgets/custom_appearance.dart';
-import 'package:qr_studio/widgets/createscreem_widgets/preview.dart';
+import 'package:qr_studio/widgets/createscreem_widgets/qr_tab_shell.dart';
 import 'package:qr_studio/widgets/createscreem_widgets/url_create.dart';
 import 'package:qr_studio/widgets/createscreem_widgets/wifi_create.dart';
-import 'package:qr_studio/utils/qr_shapes.dart';
 
 enum QrCreateType { website, wifi, contact }
 
@@ -28,13 +21,13 @@ class CreateScreenState extends State<CreateScreen> {
   final TextEditingController _urlController = TextEditingController();
 
   late QrCreateType _selectedType;
-  // Website state
+
+  // Per-tab QR data
   String _qrData = '';
-  // WiFi state
   String _wifiQrData = '';
-  // Contact state
   String _contactQrData = '';
-  // Shared appearance state
+
+  // Shared appearance
   Color _foregroundColor = Colors.black;
   Color _backgroundColor = Colors.white;
   QrStyle _eyeStyle = QrStyle.square;
@@ -43,8 +36,15 @@ class CreateScreenState extends State<CreateScreen> {
   PrettyQrDecorationImagePosition _logoPosition =
       PrettyQrDecorationImagePosition.embedded;
 
-  void setType(QrCreateType type) {
-    setState(() => _selectedType = type);
+  void setType(QrCreateType type) => setState(() => _selectedType = type);
+
+  void _resetAppearance() {
+    _foregroundColor = Colors.black;
+    _backgroundColor = Colors.white;
+    _eyeStyle = QrStyle.square;
+    _bodyStyle = QrStyle.square;
+    _logoImage = null;
+    _logoPosition = PrettyQrDecorationImagePosition.embedded;
   }
 
   @override
@@ -61,7 +61,7 @@ class CreateScreenState extends State<CreateScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final createData = [
+    final tabs = [
       (icon: Icons.language, title: 'Website', type: QrCreateType.website),
       (icon: Icons.wifi, title: 'WiFi', type: QrCreateType.wifi),
       (icon: Icons.campaign, title: 'Socials', type: QrCreateType.contact),
@@ -74,15 +74,18 @@ class CreateScreenState extends State<CreateScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Tab selector
               SizedBox(
                 height: 40,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
+                  itemCount: tabs.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 10),
                   itemBuilder: (context, index) {
-                    final item = createData[index];
-                    final isSelected = _selectedType == item.type;
+                    final tab = tabs[index];
+                    final isSelected = _selectedType == tab.type;
                     return GestureDetector(
-                      onTap: () => setState(() => _selectedType = item.type),
+                      onTap: () => setState(() => _selectedType = tab.type),
                       child: Container(
                         width: 100,
                         padding: const EdgeInsets.all(8.0),
@@ -103,15 +106,15 @@ class CreateScreenState extends State<CreateScreen> {
                         child: Row(
                           children: [
                             Icon(
-                              item.icon,
+                              tab.icon,
                               size: 20,
                               color: isSelected
                                   ? Colors.white
                                   : Theme.of(context).colorScheme.onSurface,
                             ),
-                            SizedBox(width: 8),
+                            const SizedBox(width: 8),
                             Text(
-                              item.title,
+                              tab.title,
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
@@ -125,459 +128,107 @@ class CreateScreenState extends State<CreateScreen> {
                       ),
                     );
                   },
-                  separatorBuilder: (context, index) => SizedBox(width: 10),
-                  itemCount: createData.length,
                 ),
               ),
-              SizedBox(height: 20),
-              if (_selectedType == QrCreateType.website) ...[
-                Preview(
-                  qrData: _qrData,
-                  foregroundColor: _foregroundColor,
-                  backgroundColor: _backgroundColor,
-                  eyeStyle: _eyeStyle,
-                  bodyStyle: _bodyStyle,
-                  logoImage: _logoImage,
-                  logoPosition: _logoPosition,
-                ),
-                SizedBox(height: 10),
-                UrlCreate(
-                  controller: _urlController,
-                  onChanged: (value) {
-                    setState(() {
-                      _qrData = value;
-                    });
-                  },
-                ),
-                SizedBox(height: 20),
-                CustomAppearance(
-                  foregroundColor: _foregroundColor,
-                  backgroundColor: _backgroundColor,
-                  eyeStyle: _eyeStyle,
-                  bodyStyle: _bodyStyle,
-                  onForegroundChanged: (c) =>
-                      setState(() => _foregroundColor = c),
-                  onBackgroundChanged: (c) =>
-                      setState(() => _backgroundColor = c),
-                  onEyeShapeChanged: (r) => setState(() => _eyeStyle = r),
-                  onBodyShapeChanged: (r) => setState(() => _bodyStyle = r),
-                  onLogoChanged: (img) => setState(() => _logoImage = img),
-                  onLogoPositionChanged: (pos) =>
-                      setState(() => _logoPosition = pos),
-                  logoPosition: _logoPosition,
-                ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (_qrData.trim().isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Row(
-                            children: [
-                              const Icon(
-                                Icons.error_outline,
-                                color: Colors.white,
-                              ),
-                              const SizedBox(width: 12),
-                              const Expanded(
-                                child: Text(
-                                  'Please enter data for your QR code first',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          backgroundColor: Colors.red[700],
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          margin: const EdgeInsets.all(16),
-                          elevation: 6,
-                        ),
-                      );
-                      return;
-                    }
-                    final shouldReset = await Navigator.push<bool>(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ResultScreen(
-                          qrData:
-                              _qrData.startsWith('http://') ||
-                                  _qrData.startsWith('https://')
-                              ? _qrData
-                              : 'https://$_qrData',
-                          foregroundColor: _foregroundColor,
-                          backgroundColor: _backgroundColor,
-                          eyeStyle: _eyeStyle,
-                          bodyStyle: _bodyStyle,
-                          logoImage: _logoImage,
-                          logoPosition: _logoPosition,
-                        ),
-                      ),
-                    );
+              const SizedBox(height: 20),
 
-                    // Save to history and reset only when the user finalizes on the result screen
-                    if (shouldReset == true) {
-                      final normalizedData =
-                          _qrData.startsWith('http://') ||
-                              _qrData.startsWith('https://')
-                          ? _qrData
-                          : 'https://$_qrData';
-                      final id = DateTime.now().millisecondsSinceEpoch
-                          .toString();
-                      String? logoPath;
-                      if (!kIsWeb && _logoImage is FileImage) {
-                        try {
-                          final src = (_logoImage as FileImage).file;
-                          final dir = await getApplicationDocumentsDirectory();
-                          final logoDir = Directory('${dir.path}/qr_logos');
-                          await logoDir.create(recursive: true);
-                          final dest = '${logoDir.path}/$id.png';
-                          await src.copy(dest);
-                          logoPath = dest;
-                        } catch (_) {}
-                      }
-                      await QrHistoryService.addItem(
-                        QrHistoryItem(
-                          id: id,
-                          qrData: normalizedData,
-                          createdAt: DateTime.now(),
-                          foregroundColor: _foregroundColor,
-                          backgroundColor: _backgroundColor,
-                          eyeStyle: _eyeStyle,
-                          bodyStyle: _bodyStyle,
-                          logoPosition: _logoPosition,
-                          logoPath: logoPath,
-                        ),
-                      );
-                      setState(() {
-                        _qrData = '';
-                        _foregroundColor = Colors.black;
-                        _backgroundColor = Colors.black;
-                        _eyeStyle = QrStyle.square;
-                        _bodyStyle = QrStyle.square;
-                        _logoImage = null;
-                        _logoPosition =
-                            PrettyQrDecorationImagePosition.embedded;
-                        _urlController.clear();
-                      });
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue[600],
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 40,
-                      vertical: 15,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
+              // Tab body
+              if (_selectedType == QrCreateType.website)
+                QrTabShell(
+                  qrData: _qrData,
+                  inputWidget: UrlCreate(
+                    controller: _urlController,
+                    onChanged: (v) => setState(() => _qrData = v),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.qr_code_2, size: 24, color: Colors.white),
-                      SizedBox(width: 8),
-                      Text(
-                        'GENERATE CODE',
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ),
-              ] else if (_selectedType == QrCreateType.wifi) ...[
-                Preview(
+                  buttonLabel: 'GENERATE CODE',
+                  buttonIcon: Icons.qr_code_2,
+                  buttonColor: Colors.blue[600]!,
+                  emptyMessage: 'Please enter data for your QR code first',
+                  foregroundColor: _foregroundColor,
+                  backgroundColor: _backgroundColor,
+                  eyeStyle: _eyeStyle,
+                  bodyStyle: _bodyStyle,
+                  logoImage: _logoImage,
+                  logoPosition: _logoPosition,
+                  onForegroundChanged: (c) =>
+                      setState(() => _foregroundColor = c),
+                  onBackgroundChanged: (c) =>
+                      setState(() => _backgroundColor = c),
+                  onEyeShapeChanged: (s) => setState(() => _eyeStyle = s),
+                  onBodyShapeChanged: (s) => setState(() => _bodyStyle = s),
+                  onLogoChanged: (img) => setState(() => _logoImage = img),
+                  onLogoPositionChanged: (pos) =>
+                      setState(() => _logoPosition = pos),
+                  transformQrData: (data) =>
+                      data.startsWith('http://') || data.startsWith('https://')
+                          ? data
+                          : 'https://$data',
+                  onReset: () => setState(() {
+                    _qrData = '';
+                    _urlController.clear();
+                    _resetAppearance();
+                  }),
+                )
+              else if (_selectedType == QrCreateType.wifi)
+                QrTabShell(
                   qrData: _wifiQrData,
+                  inputWidget: WifiCreate(
+                    onChanged: (v) => setState(() => _wifiQrData = v),
+                  ),
+                  buttonLabel: 'GENERATE WIFI QR',
+                  buttonIcon: Icons.wifi,
+                  buttonColor: Colors.teal[600]!,
+                  emptyMessage: 'Please fill in the network name first',
                   foregroundColor: _foregroundColor,
                   backgroundColor: _backgroundColor,
                   eyeStyle: _eyeStyle,
                   bodyStyle: _bodyStyle,
                   logoImage: _logoImage,
                   logoPosition: _logoPosition,
-                ),
-                SizedBox(height: 10),
-                WifiCreate(
-                  onChanged: (value) => setState(() => _wifiQrData = value),
-                ),
-                SizedBox(height: 20),
-                CustomAppearance(
-                  foregroundColor: _foregroundColor,
-                  backgroundColor: _backgroundColor,
-                  eyeStyle: _eyeStyle,
-                  bodyStyle: _bodyStyle,
                   onForegroundChanged: (c) =>
                       setState(() => _foregroundColor = c),
                   onBackgroundChanged: (c) =>
                       setState(() => _backgroundColor = c),
-                  onEyeShapeChanged: (r) => setState(() => _eyeStyle = r),
-                  onBodyShapeChanged: (r) => setState(() => _bodyStyle = r),
+                  onEyeShapeChanged: (s) => setState(() => _eyeStyle = s),
+                  onBodyShapeChanged: (s) => setState(() => _bodyStyle = s),
                   onLogoChanged: (img) => setState(() => _logoImage = img),
                   onLogoPositionChanged: (pos) =>
                       setState(() => _logoPosition = pos),
-                  logoPosition: _logoPosition,
-                ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (_wifiQrData.trim().isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Row(
-                            children: [
-                              const Icon(
-                                Icons.error_outline,
-                                color: Colors.white,
-                              ),
-                              const SizedBox(width: 12),
-                              const Expanded(
-                                child: Text(
-                                  'Please fill in the network name first',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          backgroundColor: Colors.red[700],
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          margin: const EdgeInsets.all(16),
-                          elevation: 6,
-                        ),
-                      );
-                      return;
-                    }
-                    final shouldReset = await Navigator.push<bool>(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ResultScreen(
-                          qrData: _wifiQrData,
-                          foregroundColor: _foregroundColor,
-                          backgroundColor: _backgroundColor,
-                          eyeStyle: _eyeStyle,
-                          bodyStyle: _bodyStyle,
-                          logoImage: _logoImage,
-                          logoPosition: _logoPosition,
-                        ),
-                      ),
-                    );
-                    if (shouldReset == true) {
-                      final id = DateTime.now().millisecondsSinceEpoch
-                          .toString();
-                      String? logoPath;
-                      if (!kIsWeb && _logoImage is FileImage) {
-                        try {
-                          final src = (_logoImage as FileImage).file;
-                          final dir = await getApplicationDocumentsDirectory();
-                          final logoDir = Directory('${dir.path}/qr_logos');
-                          await logoDir.create(recursive: true);
-                          final dest = '${logoDir.path}/$id.png';
-                          await src.copy(dest);
-                          logoPath = dest;
-                        } catch (_) {}
-                      }
-                      await QrHistoryService.addItem(
-                        QrHistoryItem(
-                          id: id,
-                          qrData: _wifiQrData,
-                          createdAt: DateTime.now(),
-                          foregroundColor: _foregroundColor,
-                          backgroundColor: _backgroundColor,
-                          eyeStyle: _eyeStyle,
-                          bodyStyle: _bodyStyle,
-                          logoPosition: _logoPosition,
-                          logoPath: logoPath,
-                        ),
-                      );
-                      setState(() {
-                        _wifiQrData = '';
-                        _foregroundColor = Colors.black;
-                        _backgroundColor = Colors.black;
-                        _eyeStyle = QrStyle.square;
-                        _bodyStyle = QrStyle.square;
-                        _logoImage = null;
-                        _logoPosition =
-                            PrettyQrDecorationImagePosition.embedded;
-                      });
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal[600],
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 40,
-                      vertical: 15,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.wifi, size: 24, color: Colors.white),
-                      SizedBox(width: 8),
-                      Text(
-                        'GENERATE WIFI QR',
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ),
-              ] else if (_selectedType == QrCreateType.contact) ...[
-                Preview(
+                  onReset: () => setState(() {
+                    _wifiQrData = '';
+                    _resetAppearance();
+                  }),
+                )
+              else if (_selectedType == QrCreateType.contact)
+                QrTabShell(
                   qrData: _contactQrData,
+                  inputWidget: ContactCreate(
+                    onChanged: (v) => setState(() => _contactQrData = v),
+                  ),
+                  buttonLabel: 'GENERATE SOCIAL QR',
+                  buttonIcon: Icons.contact_page_outlined,
+                  buttonColor: Colors.orange[700]!,
+                  emptyMessage: 'Please enter your username first',
                   foregroundColor: _foregroundColor,
                   backgroundColor: _backgroundColor,
                   eyeStyle: _eyeStyle,
                   bodyStyle: _bodyStyle,
                   logoImage: _logoImage,
                   logoPosition: _logoPosition,
-                ),
-                SizedBox(height: 10),
-                ContactCreate(
-                  onChanged: (value) => setState(() => _contactQrData = value),
-                ),
-                SizedBox(height: 20),
-                CustomAppearance(
-                  foregroundColor: _foregroundColor,
-                  backgroundColor: _backgroundColor,
-                  eyeStyle: _eyeStyle,
-                  bodyStyle: _bodyStyle,
                   onForegroundChanged: (c) =>
                       setState(() => _foregroundColor = c),
                   onBackgroundChanged: (c) =>
                       setState(() => _backgroundColor = c),
-                  onEyeShapeChanged: (r) => setState(() => _eyeStyle = r),
-                  onBodyShapeChanged: (r) => setState(() => _bodyStyle = r),
+                  onEyeShapeChanged: (s) => setState(() => _eyeStyle = s),
+                  onBodyShapeChanged: (s) => setState(() => _bodyStyle = s),
                   onLogoChanged: (img) => setState(() => _logoImage = img),
                   onLogoPositionChanged: (pos) =>
                       setState(() => _logoPosition = pos),
-                  logoPosition: _logoPosition,
+                  onReset: () => setState(() {
+                    _contactQrData = '';
+                    _resetAppearance();
+                  }),
                 ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (_contactQrData.trim().isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Row(
-                            children: [
-                              const Icon(
-                                Icons.error_outline,
-                                color: Colors.white,
-                              ),
-                              const SizedBox(width: 12),
-                              const Expanded(
-                                child: Text(
-                                  'Please enter your username first',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          backgroundColor: Colors.red[700],
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          margin: const EdgeInsets.all(16),
-                          elevation: 6,
-                        ),
-                      );
-                      return;
-                    }
-                    final shouldReset = await Navigator.push<bool>(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ResultScreen(
-                          qrData: _contactQrData,
-                          foregroundColor: _foregroundColor,
-                          backgroundColor: _backgroundColor,
-                          eyeStyle: _eyeStyle,
-                          bodyStyle: _bodyStyle,
-                          logoImage: _logoImage,
-                          logoPosition: _logoPosition,
-                        ),
-                      ),
-                    );
-                    if (shouldReset == true) {
-                      final id = DateTime.now().millisecondsSinceEpoch
-                          .toString();
-                      String? logoPath;
-                      if (!kIsWeb && _logoImage is FileImage) {
-                        try {
-                          final src = (_logoImage as FileImage).file;
-                          final dir = await getApplicationDocumentsDirectory();
-                          final logoDir = Directory('${dir.path}/qr_logos');
-                          await logoDir.create(recursive: true);
-                          final dest = '${logoDir.path}/$id.png';
-                          await src.copy(dest);
-                          logoPath = dest;
-                        } catch (_) {}
-                      }
-                      await QrHistoryService.addItem(
-                        QrHistoryItem(
-                          id: id,
-                          qrData: _contactQrData,
-                          createdAt: DateTime.now(),
-                          foregroundColor: _foregroundColor,
-                          backgroundColor: _backgroundColor,
-                          eyeStyle: _eyeStyle,
-                          bodyStyle: _bodyStyle,
-                          logoPosition: _logoPosition,
-                          logoPath: logoPath,
-                        ),
-                      );
-                      setState(() {
-                        _contactQrData = '';
-                        _foregroundColor = Colors.black;
-                        _backgroundColor = Colors.black;
-                        _eyeStyle = QrStyle.square;
-                        _bodyStyle = QrStyle.square;
-                        _logoImage = null;
-                        _logoPosition =
-                            PrettyQrDecorationImagePosition.embedded;
-                      });
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange[700],
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 40,
-                      vertical: 15,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.contact_page_outlined,
-                        size: 24,
-                        color: Colors.white,
-                      ),
-                      SizedBox(width: 8),
-                      Text(
-                        'GENERATE SOCIAL QR',
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
             ],
           ),
         ),

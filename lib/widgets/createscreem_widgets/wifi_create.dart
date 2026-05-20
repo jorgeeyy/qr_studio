@@ -205,7 +205,7 @@ class _WifiCreateState extends State<WifiCreate> {
               ),
               Switch(
                 value: _isHidden,
-                activeColor: Colors.teal,
+                activeThumbColor: Colors.teal,
                 onChanged: (v) {
                   setState(() => _isHidden = v);
                   _notify();
