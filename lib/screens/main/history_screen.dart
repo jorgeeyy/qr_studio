@@ -8,7 +8,7 @@ import 'package:qr_studio/providers/history_provider.dart';
 import 'package:qr_studio/utils/qr_shapes.dart';
 import 'package:qr_studio/utils/custom_qr_shapes.dart';
 
-// ignore: experimental_api
+// ignore: experimental_member_use
 PrettyQrShape _getShape(QrStyle style, Color color) {
   switch (style) {
     case QrStyle.rounded:
@@ -238,7 +238,7 @@ class _HistoryCard extends StatelessWidget {
                   child: PrettyQrView.data(
                     data: item.qrData,
                     decoration: PrettyQrDecoration(
-                      // ignore: experimental_api
+                      // ignore: experimental_member_use
                       shape: PrettyQrShape.custom(
                         _getShape(item.bodyStyle, item.foregroundColor),
                         finderPattern: _getShape(
@@ -351,7 +351,7 @@ class _HistoryCard extends StatelessWidget {
                   child: PrettyQrView.data(
                     data: item.qrData,
                     decoration: PrettyQrDecoration(
-                      // ignore: experimental_api
+                      // ignore: experimental_member_use
                       shape: PrettyQrShape.custom(
                         _getShape(item.bodyStyle, item.foregroundColor),
                         finderPattern: _getShape(

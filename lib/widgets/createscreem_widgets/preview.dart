@@ -107,7 +107,7 @@ class Preview extends StatelessWidget {
                         errorCorrectLevel: QrErrorCorrectLevel.H,
                         decoration: PrettyQrDecoration(
                           background: backgroundColor,
-                          // ignore: experimental_api
+                          // ignore: experimental_member_use
                           shape: PrettyQrShape.custom(
                             bodyShape,
                             finderPattern: eyeShape,

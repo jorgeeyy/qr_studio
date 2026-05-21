@@ -254,7 +254,7 @@ class _ResultScreenState extends State<ResultScreen> {
                       errorCorrectLevel: QrErrorCorrectLevel.H,
                       decoration: PrettyQrDecoration(
                         background: widget.backgroundColor,
-                        // ignore: experimental_api
+                        // ignore: experimental_member_use
                         shape: PrettyQrShape.custom(
                           _getShape(widget.bodyStyle, widget.foregroundColor),
                           finderPattern: _getShape(
