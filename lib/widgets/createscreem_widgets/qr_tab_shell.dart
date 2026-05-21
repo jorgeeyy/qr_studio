@@ -1,16 +1,17 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:qr_studio/models/qr_history_item.dart';
+import 'package:qr_studio/providers/history_provider.dart';
 import 'package:qr_studio/screens/main/result_screen.dart';
-import 'package:qr_studio/services/qr_history_service.dart';
 import 'package:qr_studio/utils/qr_shapes.dart';
 import 'package:qr_studio/widgets/createscreem_widgets/custom_appearance.dart';
 import 'package:qr_studio/widgets/createscreem_widgets/preview.dart';
 
-class QrTabShell extends StatelessWidget {
+class QrTabShell extends ConsumerWidget {
   const QrTabShell({
     super.key,
     required this.qrData,
@@ -65,7 +66,7 @@ class QrTabShell extends StatelessWidget {
   /// and before saving (e.g. URL normalisation for website QR codes).
   final String Function(String)? transformQrData;
 
-  Future<void> _onGenerate(BuildContext context) async {
+  Future<void> _onGenerate(BuildContext context, WidgetRef ref) async {
     if (qrData.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -129,25 +130,27 @@ class QrTabShell extends StatelessWidget {
           logoPath = dest;
         } catch (_) {}
       }
-      await QrHistoryService.addItem(
-        QrHistoryItem(
-          id: id,
-          qrData: resultData,
-          createdAt: DateTime.now(),
-          foregroundColor: foregroundColor,
-          backgroundColor: backgroundColor,
-          eyeStyle: eyeStyle,
-          bodyStyle: bodyStyle,
-          logoPosition: logoPosition,
-          logoPath: logoPath,
-        ),
-      );
+      await ref
+          .read(historyProvider.notifier)
+          .addItem(
+            QrHistoryItem(
+              id: id,
+              qrData: resultData,
+              createdAt: DateTime.now(),
+              foregroundColor: foregroundColor,
+              backgroundColor: backgroundColor,
+              eyeStyle: eyeStyle,
+              bodyStyle: bodyStyle,
+              logoPosition: logoPosition,
+              logoPath: logoPath,
+            ),
+          );
       onReset();
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       children: [
         Preview(
@@ -177,7 +180,7 @@ class QrTabShell extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         ElevatedButton(
-          onPressed: () => _onGenerate(context),
+          onPressed: () => _onGenerate(context, ref),
           style: ElevatedButton.styleFrom(
             backgroundColor: buttonColor,
             padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),

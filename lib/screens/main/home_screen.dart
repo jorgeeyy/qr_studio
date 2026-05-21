@@ -18,8 +18,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   final _createScreenKey = GlobalKey<CreateScreenState>();
-  final _historyScreenKey = GlobalKey<HistoryScreenState>();
-  final _recentCodesKey = GlobalKey<RecentCodesState>();
 
   late final List<Widget> _screens = [
     _HomeTab(
@@ -29,11 +27,10 @@ class _HomeScreenState extends State<HomeScreen> {
         _createScreenKey.currentState?.setType(type);
         _onNavTapped(1);
       },
-      recentCodesKey: _recentCodesKey,
     ),
     CreateScreen(key: _createScreenKey),
     const ScanScreen(),
-    HistoryScreen(key: _historyScreenKey),
+    const HistoryScreen(),
     const ProfileScreen(),
   ];
 
@@ -46,13 +43,6 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   void _onNavTapped(int index) {
-    // Leaving create tab — a QR may have just been saved
-    if (_currentIndex == 1 && index != 1) {
-      _recentCodesKey.currentState?.reload();
-      _historyScreenKey.currentState?.reload();
-    }
-    if (index == 0) _recentCodesKey.currentState?.reload();
-    if (index == 3) _historyScreenKey.currentState?.reload();
     setState(() {
       _currentIndex = index;
     });
@@ -180,13 +170,11 @@ class _HomeTab extends StatelessWidget {
     required this.onStartScanning,
     required this.onHistory,
     required this.onCreateType,
-    required this.recentCodesKey,
   });
 
   final VoidCallback onStartScanning;
   final VoidCallback onHistory;
   final ValueChanged<QrCreateType> onCreateType;
-  final GlobalKey<RecentCodesState> recentCodesKey;
 
   @override
   Widget build(BuildContext context) {
@@ -201,7 +189,7 @@ class _HomeTab extends StatelessWidget {
               onCreateType: () => onCreateType(QrCreateType.website),
             ),
             const SizedBox(height: 20),
-            RecentCodes(key: recentCodesKey, onHistory: onHistory),
+            RecentCodes(onHistory: onHistory),
           ],
         ),
       ),

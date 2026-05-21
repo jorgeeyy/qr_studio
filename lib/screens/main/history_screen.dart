@@ -1,47 +1,48 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:qr_studio/models/qr_history_item.dart';
-import 'package:qr_studio/services/qr_history_service.dart';
+import 'package:qr_studio/providers/history_provider.dart';
 import 'package:qr_studio/utils/qr_shapes.dart';
 import 'package:qr_studio/utils/custom_qr_shapes.dart';
 
-class HistoryScreen extends StatefulWidget {
-  const HistoryScreen({super.key});
-
-  @override
-  State<HistoryScreen> createState() => HistoryScreenState();
+// ignore: experimental_api
+PrettyQrShape _getShape(QrStyle style, Color color) {
+  switch (style) {
+    case QrStyle.rounded:
+      return PrettyQrSquaresSymbol(color: color);
+    case QrStyle.dots:
+      return PrettyQrSmoothSymbol(color: color, roundFactor: 1);
+    case QrStyle.smooth:
+      return PrettyQrSmoothSymbol(color: color);
+    case QrStyle.diamond:
+      return QrDiamondShape(color: color);
+    case QrStyle.star:
+      return QrStarShape(color: color);
+    case QrStyle.hexagon:
+      return QrHexagonShape(color: color);
+    case QrStyle.leaf:
+      return QrLeafShape(color: color);
+    case QrStyle.square:
+      return PrettyQrSquaresSymbol(color: color);
+  }
 }
 
-class HistoryScreenState extends State<HistoryScreen> {
-  List<QrHistoryItem> _items = [];
-  bool _loading = true;
+String _formatDate(DateTime dt) {
+  final now = DateTime.now();
+  final diff = now.difference(dt);
+  if (diff.inDays == 0) return 'Today';
+  if (diff.inDays == 1) return 'Yesterday';
+  if (diff.inDays < 7) return '${diff.inDays} days ago';
+  return '${dt.day}/${dt.month}/${dt.year}';
+}
 
-  @override
-  void initState() {
-    super.initState();
-    _loadHistory();
-  }
+class HistoryScreen extends ConsumerWidget {
+  const HistoryScreen({super.key});
 
-  Future<void> _loadHistory() async {
-    final items = await QrHistoryService.getHistory();
-    if (mounted) {
-      setState(() {
-        _items = items;
-        _loading = false;
-      });
-    }
-  }
-
-  void reload() => _loadHistory();
-
-  Future<void> _deleteItem(String id) async {
-    await QrHistoryService.deleteItem(id);
-    setState(() => _items.removeWhere((e) => e.id == id));
-  }
-
-  Future<void> _clearAll() async {
+  Future<void> _clearAll(BuildContext context, WidgetRef ref) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -62,47 +63,14 @@ class HistoryScreenState extends State<HistoryScreen> {
       ),
     );
     if (confirmed == true) {
-      await QrHistoryService.clearHistory();
-      setState(() => _items = []);
+      await ref.read(historyProvider.notifier).clearAll();
     }
-  }
-
-  // ignore: experimental_api
-  PrettyQrShape _getShape(QrStyle style, Color color) {
-    switch (style) {
-      case QrStyle.rounded:
-        return PrettyQrSquaresSymbol(color: color);
-      case QrStyle.dots:
-        return PrettyQrSmoothSymbol(color: color, roundFactor: 1);
-      case QrStyle.smooth:
-        return PrettyQrSmoothSymbol(color: color);
-      case QrStyle.diamond:
-        return QrDiamondShape(color: color);
-      case QrStyle.star:
-        return QrStarShape(color: color);
-      case QrStyle.hexagon:
-        return QrHexagonShape(color: color);
-      case QrStyle.leaf:
-        return QrLeafShape(color: color);
-      case QrStyle.square:
-        return PrettyQrSquaresSymbol(
-          color: color,
-          // borderRadius: BorderRadius.zero,
-        );
-    }
-  }
-
-  String _formatDate(DateTime dt) {
-    final now = DateTime.now();
-    final diff = now.difference(dt);
-    if (diff.inDays == 0) return 'Today';
-    if (diff.inDays == 1) return 'Yesterday';
-    if (diff.inDays < 7) return '${diff.inDays} days ago';
-    return '${dt.day}/${dt.month}/${dt.year}';
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final historyAsync = ref.watch(historyProvider);
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -113,73 +81,85 @@ class HistoryScreenState extends State<HistoryScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  if (_items.isNotEmpty)
-                    TextButton.icon(
-                      onPressed: _clearAll,
-                      icon: Icon(
-                        Icons.delete_sweep,
-                        color: Colors.red[600],
-                        size: 18,
-                      ),
-                      label: Text(
-                        'Clear All',
-                        style: TextStyle(color: Colors.red[600]),
-                      ),
-                    ),
+                  historyAsync.whenOrNull(
+                        data: (items) => items.isNotEmpty
+                            ? TextButton.icon(
+                                onPressed: () => _clearAll(context, ref),
+                                icon: Icon(
+                                  Icons.delete_sweep,
+                                  color: Colors.red[600],
+                                  size: 18,
+                                ),
+                                label: Text(
+                                  'Clear All',
+                                  style: TextStyle(color: Colors.red[600]),
+                                ),
+                              )
+                            : null,
+                      ) ??
+                      const SizedBox.shrink(),
                 ],
               ),
               const SizedBox(height: 16),
-              Expanded(child: _buildBody()),
+              Expanded(
+                child: historyAsync.when(
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (e, _) => Center(child: Text('Error: $e')),
+                  data: (items) {
+                    if (items.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.qr_code_2,
+                              size: 64,
+                              color: Colors.grey[300],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No history yet',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.grey[500],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Generated QR codes will appear here',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[400],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                    return RefreshIndicator(
+                      onRefresh: () => ref.refresh(historyProvider.future),
+                      child: ListView.separated(
+                        itemCount: items.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 10),
+                        itemBuilder: (context, index) {
+                          final item = items[index];
+                          return _HistoryCard(
+                            item: item,
+                            onDelete: () => ref
+                                .read(historyProvider.notifier)
+                                .deleteItem(item.id),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildBody() {
-    if (_loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (_items.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.qr_code_2, size: 64, color: Colors.grey[300]),
-            const SizedBox(height: 16),
-            Text(
-              'No history yet',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey[500],
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Generated QR codes will appear here',
-              style: TextStyle(fontSize: 14, color: Colors.grey[400]),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: _loadHistory,
-      child: ListView.separated(
-        itemCount: _items.length,
-        separatorBuilder: (_, _) => const SizedBox(height: 10),
-        itemBuilder: (context, index) {
-          final item = _items[index];
-          return _HistoryCard(
-            item: item,
-            getShape: _getShape,
-            formatDate: _formatDate,
-            onDelete: () => _deleteItem(item.id),
-          );
-        },
       ),
     );
   }
@@ -187,16 +167,9 @@ class HistoryScreenState extends State<HistoryScreen> {
 
 class _HistoryCard extends StatelessWidget {
   final QrHistoryItem item;
-  final PrettyQrShape Function(QrStyle, Color) getShape;
-  final String Function(DateTime) formatDate;
   final VoidCallback onDelete;
 
-  const _HistoryCard({
-    required this.item,
-    required this.getShape,
-    required this.formatDate,
-    required this.onDelete,
-  });
+  const _HistoryCard({required this.item, required this.onDelete});
 
   String _qrLabel(String qrData) {
     if (qrData.startsWith('WIFI:')) {
@@ -265,8 +238,8 @@ class _HistoryCard extends StatelessWidget {
                     decoration: PrettyQrDecoration(
                       // ignore: experimental_api
                       shape: PrettyQrShape.custom(
-                        getShape(item.bodyStyle, item.foregroundColor),
-                        finderPattern: getShape(
+                        _getShape(item.bodyStyle, item.foregroundColor),
+                        finderPattern: _getShape(
                           item.eyeStyle,
                           item.foregroundColor,
                         ),
@@ -299,7 +272,7 @@ class _HistoryCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      formatDate(item.createdAt),
+                      _formatDate(item.createdAt),
                       style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                     ),
                     const SizedBox(height: 4),
@@ -378,8 +351,8 @@ class _HistoryCard extends StatelessWidget {
                     decoration: PrettyQrDecoration(
                       // ignore: experimental_api
                       shape: PrettyQrShape.custom(
-                        getShape(item.bodyStyle, item.foregroundColor),
-                        finderPattern: getShape(
+                        _getShape(item.bodyStyle, item.foregroundColor),
+                        finderPattern: _getShape(
                           item.eyeStyle,
                           item.foregroundColor,
                         ),
@@ -398,7 +371,7 @@ class _HistoryCard extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                formatDate(item.createdAt),
+                _formatDate(item.createdAt),
                 style: TextStyle(fontSize: 13, color: Colors.grey[500]),
               ),
             ],

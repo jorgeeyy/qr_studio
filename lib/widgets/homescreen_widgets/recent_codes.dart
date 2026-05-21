@@ -1,50 +1,84 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
-import 'package:qr_studio/models/qr_history_item.dart';
-import 'package:qr_studio/services/qr_history_service.dart';
+import 'package:qr_studio/providers/history_provider.dart';
 import 'package:qr_studio/utils/qr_shapes.dart';
 import 'package:qr_studio/utils/custom_qr_shapes.dart';
 
-class RecentCodes extends StatefulWidget {
+// ignore: experimental_api
+PrettyQrShape _getShape(QrStyle style, Color color) {
+  switch (style) {
+    case QrStyle.rounded:
+      return PrettyQrSquaresSymbol(color: color);
+    case QrStyle.dots:
+      return PrettyQrSmoothSymbol(color: color, roundFactor: 1);
+    case QrStyle.smooth:
+      return PrettyQrSmoothSymbol(color: color);
+    case QrStyle.diamond:
+      return QrDiamondShape(color: color);
+    case QrStyle.star:
+      return QrStarShape(color: color);
+    case QrStyle.hexagon:
+      return QrHexagonShape(color: color);
+    case QrStyle.leaf:
+      return QrLeafShape(color: color);
+    case QrStyle.square:
+      return PrettyQrSquaresSymbol(color: color);
+  }
+}
+
+String _qrLabel(String qrData) {
+  if (qrData.startsWith('WIFI:')) {
+    final match = RegExp(r'S:([^;]+)').firstMatch(qrData);
+    final ssid = match?.group(1) ?? '';
+    return 'WiFi · $ssid';
+  }
+  const platforms = {
+    'instagram.com': 'Instagram',
+    'x.com': 'X / Twitter',
+    'facebook.com': 'Facebook',
+    'linkedin.com': 'LinkedIn',
+    'tiktok.com': 'TikTok',
+    'youtube.com': 'YouTube',
+    'snapchat.com': 'Snapchat',
+    'wa.me': 'WhatsApp',
+    't.me': 'Telegram',
+    'github.com': 'GitHub',
+  };
+  for (final entry in platforms.entries) {
+    if (qrData.contains(entry.key)) {
+      final uri = Uri.tryParse(qrData);
+      final parts = uri?.pathSegments.where((s) => s.isNotEmpty).toList();
+      final handle = (parts != null && parts.isNotEmpty) ? parts.last : '';
+      return '${entry.value} · $handle';
+    }
+  }
+  return qrData;
+}
+
+String _formatDate(DateTime dt) {
+  final now = DateTime.now();
+  final diff = now.difference(dt);
+  if (diff.inDays == 0) return 'Today';
+  if (diff.inDays == 1) return 'Yesterday';
+  if (diff.inDays < 7) return '${diff.inDays}d ago';
+  return '${dt.day}/${dt.month}/${dt.year}';
+}
+
+class RecentCodes extends ConsumerWidget {
   const RecentCodes({super.key, required this.onHistory});
 
   final VoidCallback onHistory;
 
   @override
-  State<RecentCodes> createState() => RecentCodesState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final historyAsync = ref.watch(historyProvider);
+    final items =
+        historyAsync.whenOrNull(data: (list) => list.take(3).toList()) ?? [];
 
-class RecentCodesState extends State<RecentCodes> {
-  List<QrHistoryItem> _items = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadRecent();
-  }
-
-  @override
-  void didUpdateWidget(covariant RecentCodes oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _loadRecent();
-  }
-
-  Future<void> _loadRecent() async {
-    final all = await QrHistoryService.getHistory();
-    if (mounted) {
-      setState(() {
-        _items = all.take(3).toList();
-      });
-    }
-  }
-
-  void reload() => _loadRecent();
-
-  @override
-  Widget build(BuildContext context) {
-    if (_items.isEmpty) {
+    if (items.isEmpty) {
       return Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
@@ -96,7 +130,7 @@ class RecentCodesState extends State<RecentCodes> {
             ),
             Spacer(),
             TextButton(
-              onPressed: widget.onHistory,
+              onPressed: onHistory,
               child: Text(
                 'View All',
                 style: TextStyle(
@@ -112,10 +146,10 @@ class RecentCodesState extends State<RecentCodes> {
         ListView.separated(
           shrinkWrap: true,
           physics: NeverScrollableScrollPhysics(),
-          itemCount: _items.length,
+          itemCount: items.length,
           separatorBuilder: (context, index) => SizedBox(height: 10),
           itemBuilder: (context, index) {
-            final item = _items[index];
+            final item = items[index];
             return Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -206,66 +240,6 @@ class RecentCodesState extends State<RecentCodes> {
         ),
       ],
     );
-  }
-
-  // ignore: experimental_api
-  PrettyQrShape _getShape(QrStyle style, Color color) {
-    switch (style) {
-      case QrStyle.rounded:
-        return PrettyQrSquaresSymbol(color: color);
-      case QrStyle.dots:
-        return PrettyQrSmoothSymbol(color: color, roundFactor: 1);
-      case QrStyle.smooth:
-        return PrettyQrSmoothSymbol(color: color);
-      case QrStyle.diamond:
-        return QrDiamondShape(color: color);
-      case QrStyle.star:
-        return QrStarShape(color: color);
-      case QrStyle.hexagon:
-        return QrHexagonShape(color: color);
-      case QrStyle.leaf:
-        return QrLeafShape(color: color);
-      case QrStyle.square:
-        return PrettyQrSquaresSymbol(color: color);
-    }
-  }
-
-  String _qrLabel(String qrData) {
-    if (qrData.startsWith('WIFI:')) {
-      final match = RegExp(r'S:([^;]+)').firstMatch(qrData);
-      final ssid = match?.group(1) ?? '';
-      return 'WiFi · $ssid';
-    }
-    const platforms = {
-      'instagram.com': 'Instagram',
-      'x.com': 'X / Twitter',
-      'facebook.com': 'Facebook',
-      'linkedin.com': 'LinkedIn',
-      'tiktok.com': 'TikTok',
-      'youtube.com': 'YouTube',
-      'snapchat.com': 'Snapchat',
-      'wa.me': 'WhatsApp',
-      't.me': 'Telegram',
-      'github.com': 'GitHub',
-    };
-    for (final entry in platforms.entries) {
-      if (qrData.contains(entry.key)) {
-        final uri = Uri.tryParse(qrData);
-        final parts = uri?.pathSegments.where((s) => s.isNotEmpty).toList();
-        final handle = (parts != null && parts.isNotEmpty) ? parts.last : '';
-        return '${entry.value} · $handle';
-      }
-    }
-    return qrData;
-  }
-
-  String _formatDate(DateTime dt) {
-    final now = DateTime.now();
-    final diff = now.difference(dt);
-    if (diff.inDays == 0) return 'Today';
-    if (diff.inDays == 1) return 'Yesterday';
-    if (diff.inDays < 7) return '${diff.inDays}d ago';
-    return '${dt.day}/${dt.month}/${dt.year}';
   }
 }
 
