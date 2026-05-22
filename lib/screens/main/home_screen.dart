@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_studio/screens/main/create_screen.dart';
 import 'package:qr_studio/screens/main/history_screen.dart';
 import 'package:qr_studio/screens/main/profile_screen.dart';
@@ -18,6 +19,16 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   final _createScreenKey = GlobalKey<CreateScreenState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _requestPermissions();
+  }
+
+  Future<void> _requestPermissions() async {
+    await [Permission.camera, Permission.locationWhenInUse].request();
+  }
 
   late final List<Widget> _screens = [
     _HomeTab(
