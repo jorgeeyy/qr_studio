@@ -85,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.only(bottom: 12, top: 12),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

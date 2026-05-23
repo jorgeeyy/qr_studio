@@ -6,10 +6,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:pretty_qr_code/pretty_qr_code.dart';
-import 'package:qr_studio/models/qr_history_item.dart';
-import 'package:qr_studio/providers/history_provider.dart';
-import 'package:qr_studio/utils/qr_shapes.dart';
+// import 'package:pretty_qr_code/pretty_qr_code.dart';
+// import 'package:qr_studio/models/qr_history_item.dart';
+// import 'package:qr_studio/providers/history_provider.dart';
+// import 'package:qr_studio/utils/qr_shapes.dart';
+import 'package:qr_studio/utils/image_utils.dart';
 import 'package:qr_studio/screens/main/scanned_result_screen.dart';
 
 // Decoupled Widgets
@@ -19,8 +20,6 @@ import 'package:qr_studio/widgets/scanscreen_widgets/scanner_instruction_text.da
 import 'package:qr_studio/widgets/scanscreen_widgets/scanner_control_dock.dart';
 import 'package:qr_studio/widgets/scanscreen_widgets/scanner_error_view.dart';
 
-/// Returns true on platforms where [mobile_scanner] has native QR detection.
-/// Windows and Linux are NOT supported by the package.
 bool get _isNativeScanSupported =>
     !kIsWeb && (Platform.isAndroid || Platform.isIOS || Platform.isMacOS);
 
@@ -82,7 +81,18 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
     if (!mounted) return;
 
     if (_isNativeScanSupported) {
-      // ── Real native decode via mobile_scanner ──────────────────────────
+      // ── Preprocess image for better QR detection ──
+      final bytes = await image.readAsBytes();
+      final processedBytes = await compute(preprocessForQrDetection, bytes);
+
+      // Save to temp file for analyzeImage
+      final tempDir = Directory.systemTemp;
+      final tempFile = await File(
+        '${tempDir.path}/qr_preprocessed_${DateTime.now().millisecondsSinceEpoch}.png',
+      ).create();
+      await tempFile.writeAsBytes(processedBytes);
+
+      if (!mounted) return;
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -90,7 +100,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
       );
 
       final BarcodeCapture? capture = await _scannerController.analyzeImage(
-        image.path,
+        tempFile.path,
       );
 
       if (!mounted) return;
@@ -109,6 +119,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
       }
     } else {
       // ── Simulation fallback on Windows / Linux ─────────────────────────
+      if (!mounted) return;
       _showSimulationSheet(
         title: 'Gallery Image (Simulated)',
         defaultData: 'https://qr-studio.app/gallery-imported-code',
@@ -267,17 +278,17 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
       await _scannerController.stop();
     }
 
-    final historyItem = QrHistoryItem(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      qrData: data,
-      createdAt: DateTime.now(),
-      foregroundColor: Colors.blue,
-      backgroundColor: Colors.white,
-      eyeStyle: QrStyle.square,
-      bodyStyle: QrStyle.square,
-      logoPosition: PrettyQrDecorationImagePosition.embedded,
-    );
-    await ref.read(historyProvider.notifier).addItem(historyItem);
+    // final historyItem = QrHistoryItem(
+    //   id: DateTime.now().millisecondsSinceEpoch.toString(),
+    //   qrData: data,
+    //   createdAt: DateTime.now(),
+    //   foregroundColor: Colors.blue,
+    //   backgroundColor: Colors.white,
+    //   eyeStyle: QrStyle.square,
+    //   bodyStyle: QrStyle.square,
+    //   logoPosition: PrettyQrDecorationImagePosition.embedded,
+    // );
+    // await ref.read(historyProvider.notifier).addItem(historyItem);
 
     if (!mounted) return;
 
@@ -382,7 +393,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
           onGalleryTap: _importFromGallery,
           // On native: camera scans automatically — center button does nothing.
           // On Windows: center button triggers the simulation sheet.
-          onCenterTap: _isNativeScanSupported ? () {} : _showSimulationSheet,
+          // onCenterTap: _isNativeScanSupported ? () {} : _showSimulationSheet,
           onFlashlightTap: _toggleFlash,
           isFlashOn: _isFlashOn,
         ),
