@@ -46,14 +46,15 @@ dependencies:
   flutter_image_compress: ^2.4.0
   pretty_qr_code: ^3.6.0
   shared_preferences: ^2.3.5
-  flutter_riverpod: ^2.6.1
+  flutter_riverpod: ^3.3.1
   wifi_iot: ^0.3.19
-  permission_handler: ^11.3.0
+  permission_handler: ^12.0.1
   camera: ^0.12.0+1
   mobile_scanner: ^7.2.0
   url_launcher: ^6.3.1
   qr_code_tools: ^0.2.0
   ai_barcode_scanner: ^7.1.0
+  flutter_native_splash: ^2.4.7
 
 dev_dependencies:
   flutter_test:
@@ -81,6 +82,7 @@ flutter:
   assets:
     - assets/images/QR3.png
     - assets/images/DemoQR.png
+    - assets/images/screen.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -107,3 +109,9 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_native_splash:
+  color: "#ffffff"
+  image: assets/images/screen.png
+  android: true
+  ios: true
