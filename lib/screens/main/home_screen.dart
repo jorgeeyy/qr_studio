@@ -27,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _requestPermissions() async {
-    await [Permission.camera, Permission.locationWhenInUse].request();
+    await [Permission.camera].request();
   }
 
   late final List<Widget> _screens = [

@@ -8,28 +8,8 @@ void main() {
   runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  bool? _onboardingComplete;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkOnboarding();
-  }
-
-  Future<void> _checkOnboarding() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,11 +58,98 @@ class _MyAppState extends State<MyApp> {
         dividerColor: const Color(0xFF2C2C2C),
       ),
       themeMode: ThemeMode.dark,
-      home: _onboardingComplete == null
-          ? const Scaffold(body: SizedBox.shrink())
-          : _onboardingComplete!
-          ? const HomeScreen()
-          : const FirstScreen(),
+      home: const SplashScreen(),
+    );
+  }
+}
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 700),
+  );
+  late final Animation<double> _scale = Tween(
+    begin: 0.9,
+    end: 1.0,
+  ).chain(CurveTween(curve: Curves.elasticOut)).animate(_controller);
+  late final Animation<double> _fade = Tween(
+    begin: 0.0,
+    end: 1.0,
+  ).chain(CurveTween(curve: Curves.easeIn)).animate(_controller);
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.forward();
+    _startDelay();
+  }
+
+  Future<void> _startDelay() async {
+    await Future.delayed(const Duration(milliseconds: 1400));
+    if (!mounted) return;
+    final prefs = await SharedPreferences.getInstance();
+    final onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
+    if (!mounted) return;
+    if (onboardingComplete) {
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const HomeScreen()));
+    } else {
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const FirstScreen()));
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = const Color(0xFF0E0E0E);
+    return Scaffold(
+      backgroundColor: bg,
+      body: SafeArea(
+        child: Center(
+          child: FadeTransition(
+            opacity: _fade,
+            child: ScaleTransition(
+              scale: _scale,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.qr_code_2, size: 96, color: Colors.white),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'QR Studio',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Scan • Create • Share',
+                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
