@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
+// import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_studio/screens/main/create_screen.dart';
 import 'package:qr_studio/screens/main/history_screen.dart';
 import 'package:qr_studio/screens/main/profile_screen.dart';
@@ -23,14 +23,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _requestPermissions();
   }
 
-  Future<void> _requestPermissions() async {
-    await [Permission.camera].request();
-  }
-
-  late final List<Widget> _screens = [
+  List<Widget> get _screens => [
     _HomeTab(
       onStartScanning: () => _onNavTapped(2),
       onHistory: () => _onNavTapped(3),
@@ -40,7 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     ),
     CreateScreen(key: _createScreenKey),
-    const ScanScreen(),
+    ScanScreen(isActive: _currentIndex == 2),
     const HistoryScreen(),
     const ProfileScreen(),
   ];

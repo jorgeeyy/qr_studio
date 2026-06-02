@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:permission_handler/permission_handler.dart';
 // import 'package:pretty_qr_code/pretty_qr_code.dart';
 // import 'package:qr_studio/models/qr_history_item.dart';
 // import 'package:qr_studio/providers/history_provider.dart';
@@ -24,27 +25,34 @@ bool get _isNativeScanSupported =>
     !kIsWeb && (Platform.isAndroid || Platform.isIOS || Platform.isMacOS);
 
 class ScanScreen extends ConsumerStatefulWidget {
-  const ScanScreen({super.key});
+  final bool isActive;
+  const ScanScreen({super.key, this.isActive = true});
 
   @override
   ConsumerState<ScanScreen> createState() => _ScanScreenState();
 }
 
 class _ScanScreenState extends ConsumerState<ScanScreen>
-    with SingleTickerProviderStateMixin {
-  late MobileScannerController _scannerController;
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
+  MobileScannerController? _scannerController;
   bool _isFlashOn = false;
   bool _hasScanned = false; // debounce guard
   late AnimationController _animationController;
   late Animation<double> _laserAnimation;
+  bool _permissionGranted = false;
+
+  /// Single-flight lock — prevents concurrent calls to Permission.camera.request().
+  /// Any call to [_checkAndInitScanner] while a check is already in-flight
+  /// will simply await the same Future instead of firing a second OS dialog.
+  Future<void>? _permissionFuture;
 
   @override
   void initState() {
     super.initState();
-    _scannerController = MobileScannerController(
-      facing: CameraFacing.back,
-      detectionSpeed: DetectionSpeed.normal,
-    );
+    WidgetsBinding.instance.addObserver(this);
+    if (widget.isActive) {
+      _checkAndInitScanner();
+    }
 
     _animationController = AnimationController(
       vsync: this,
@@ -57,15 +65,42 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
     _animationController.repeat(reverse: true);
   }
 
+  @override
+  void didUpdateWidget(covariant ScanScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive != oldWidget.isActive) {
+      if (widget.isActive) {
+        _checkAndInitScanner();
+      } else {
+        _deinitScanner();
+      }
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!widget.isActive) return;
+    
+    switch (state) {
+      case AppLifecycleState.resumed:
+        _checkAndInitScanner();
+        break;
+      case AppLifecycleState.paused:
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.detached:
+      case AppLifecycleState.hidden:
+        _deinitScanner();
+        break;
+    }
+  }
+
   // ── Torch ────────────────────────────────────────────────────────────────
 
   Future<void> _toggleFlash() async {
     if (!_isNativeScanSupported) return; // no torch on desktop
     try {
-      await _scannerController.toggleTorch();
-      setState(() {
-        _isFlashOn = !_isFlashOn;
-      });
+      if (_scannerController == null) return;
+      await _scannerController!.toggleTorch();
     } catch (e) {
       debugPrint('Failed to toggle torch: $e');
     }
@@ -99,9 +134,16 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
         builder: (_) => _buildDecodingDialog(),
       );
 
-      final BarcodeCapture? capture = await _scannerController.analyzeImage(
+      final controllerForAnalyze =
+          _scannerController ?? MobileScannerController();
+      final BarcodeCapture? capture = await controllerForAnalyze.analyzeImage(
         tempFile.path,
       );
+
+      if (_scannerController == null) {
+        // dispose temporary controller if we created one
+        await controllerForAnalyze.dispose();
+      }
 
       if (!mounted) return;
       Navigator.pop(context);
@@ -275,7 +317,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
     await HapticFeedback.mediumImpact();
 
     if (_isNativeScanSupported) {
-      await _scannerController.stop();
+      await _scannerController?.stop();
     }
 
     // final historyItem = QrHistoryItem(
@@ -300,15 +342,16 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
     if (mounted) {
       _hasScanned = false;
       if (_isNativeScanSupported) {
-        await _scannerController.start();
+        await _scannerController?.start();
       }
     }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _animationController.dispose();
-    _scannerController.dispose();
+    _scannerController?.dispose();
     super.dispose();
   }
 
@@ -319,27 +362,29 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
         // ── Camera feed or desktop placeholder ─────────────────────────────
         if (_isNativeScanSupported)
           Positioned.fill(
-            child: MobileScanner(
-              controller: _scannerController,
-              fit: BoxFit.cover,
-              onDetect: (BarcodeCapture capture) {
-                final rawValue = capture.barcodes.firstOrNull?.rawValue;
-                if (rawValue != null && rawValue.isNotEmpty) {
-                  _handleScanSuccess(rawValue);
-                }
-              },
-              errorBuilder: (context, error) {
-                return ScannerErrorView(
-                  errorMessage:
-                      error.errorDetails?.message ??
-                      'Failed to start camera. Please grant camera permissions.',
-                  onRetryTap: () async {
-                    await _scannerController.stop();
-                    await _scannerController.start();
-                  },
-                );
-              },
-            ),
+            child: _permissionGranted
+                ? MobileScanner(
+                    controller: _scannerController,
+                    fit: BoxFit.cover,
+                    onDetect: (BarcodeCapture capture) {
+                      final rawValue = capture.barcodes.firstOrNull?.rawValue;
+                      if (rawValue != null && rawValue.isNotEmpty) {
+                        _handleScanSuccess(rawValue);
+                      }
+                    },
+                    errorBuilder: (context, error) {
+                      return ScannerErrorView(
+                        errorMessage:
+                            error.errorDetails?.message ??
+                            'Failed to start camera. Please grant camera permissions.',
+                        onRetryTap: () async {
+                          await _scannerController?.stop();
+                          await _scannerController?.start();
+                        },
+                      );
+                    },
+                  )
+                : _buildPermissionRequestView(),
           )
         else
           // Windows / Linux — dark background with a "simulation" label
@@ -399,5 +444,153 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
         ),
       ],
     );
+  }
+
+  Widget _buildPermissionRequestView() {
+    return Container(
+      color: const Color(0xFF0A0A0F),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Camera permission required to scan QR codes.',
+              style: TextStyle(color: Colors.white, fontSize: 16),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () async {
+                final status = await Permission.camera.status;
+                if (status.isPermanentlyDenied) {
+                  // Can't re-request — must go to OS settings.
+                  await openAppSettings();
+                } else {
+                  _checkAndInitScanner(forceRequest: true);
+                }
+              },
+              child: const Text('Grant Camera Permission'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Permission handling (single-flight) ───────────────────────────────────
+
+  /// Public entry point. Safe to call multiple times concurrently — subsequent
+  /// calls while a check is already running will await the same [Future].
+  Future<void> _checkAndInitScanner({bool forceRequest = false}) {
+    if (!_isNativeScanSupported) return Future.value();
+    _permissionFuture ??= _doPermissionCheck(
+      forceRequest,
+    ).whenComplete(() => _permissionFuture = null);
+    return _permissionFuture!;
+  }
+
+  /// The actual permission + init work. Only ever runs one at a time thanks to
+  /// the [_permissionFuture] lock in [_checkAndInitScanner].
+  Future<void> _doPermissionCheck(bool forceRequest) async {
+    try {
+      final status = await Permission.camera.status;
+
+      // One-time grants on Android report as .denied on next cold check
+      // but the OS still allows the camera — so attempt init first if
+      // the status looks usable, and let the controller be the truth.
+      final bool statusAllowsAttempt =
+          status.isGranted ||
+          status.isLimited ||
+          forceRequest ||
+          status.isDenied;
+
+      if (statusAllowsAttempt && !status.isPermanentlyDenied) {
+        // If denied/one-time, request first, then try to start.
+        if (status.isDenied || forceRequest) {
+          final result = await Permission.camera.request();
+          // Permanently denied after dialog — send to settings.
+          if (result.isPermanentlyDenied) {
+            if (mounted) setState(() => _permissionGranted = false);
+            return;
+          }
+          // Even if result is .denied here, the controller start will
+          // fail gracefully — we let it try rather than bail early.
+        }
+
+        await _initScannerController();
+
+        // Re-query AFTER attempting start — one-time grants settle here.
+        final fresh = await Permission.camera.status;
+        final granted =
+            fresh.isGranted || fresh.isLimited || _scannerController != null;
+        if (mounted) setState(() => _permissionGranted = granted);
+        return;
+      }
+
+      if (mounted) setState(() => _permissionGranted = false);
+    } catch (e) {
+      debugPrint('Permission check failed: $e');
+      if (mounted) setState(() => _permissionGranted = false);
+    }
+  }
+
+  Future<void> _initScannerController() async {
+    _scannerController ??= MobileScannerController(
+      facing: CameraFacing.back,
+      detectionSpeed: DetectionSpeed.normal,
+    );
+    try {
+      await _scannerController?.start();
+      _scannerController?.addListener(_onTorchStateChanged);
+      if (_scannerController != null) {
+        if (mounted) {
+          setState(() {
+            _isFlashOn = _scannerController!.value.torchState == TorchState.on;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Failed to start scanner controller: $e');
+      // Dispose so next attempt creates a fresh controller.
+      await _scannerController?.dispose();
+      _scannerController = null;
+    }
+  }
+
+  void _onTorchStateChanged() {
+    if (_scannerController == null) return;
+    final state = _scannerController!.value.torchState;
+    final isOn = state == TorchState.on;
+    if (isOn != _isFlashOn && mounted) {
+      setState(() {
+        _isFlashOn = isOn;
+      });
+    }
+  }
+
+  Future<void> _deinitScanner() async {
+    if (_scannerController != null) {
+      try {
+        _scannerController!.removeListener(_onTorchStateChanged);
+      } catch (e) {
+        debugPrint('Failed to remove listener: $e');
+      }
+      try {
+        await _scannerController!.stop();
+      } catch (e) {
+        debugPrint('Failed to stop scanner on deinit: $e');
+      }
+      try {
+        await _scannerController!.dispose();
+      } catch (e) {
+        debugPrint('Failed to dispose scanner on deinit: $e');
+      }
+      _scannerController = null;
+    }
+    if (mounted) {
+      setState(() {
+        _permissionGranted = false;
+        _isFlashOn = false;
+      });
+    }
   }
 }

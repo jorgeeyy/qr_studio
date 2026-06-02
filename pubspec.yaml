@@ -55,6 +55,7 @@ dependencies:
   qr_code_tools: ^0.2.0
   ai_barcode_scanner: ^7.1.0
   flutter_native_splash: ^2.4.7
+  android_intent_plus: ^6.0.0
 
 dev_dependencies:
   flutter_test:
