@@ -80,7 +80,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (!widget.isActive) return;
-    
+
     switch (state) {
       case AppLifecycleState.resumed:
         _checkAndInitScanner();
@@ -460,12 +460,15 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
             const SizedBox(height: 12),
             ElevatedButton(
               onPressed: () async {
-                final status = await Permission.camera.status;
-                if (status.isPermanentlyDenied) {
-                  // Can't re-request — must go to OS settings.
-                  await openAppSettings();
-                } else {
-                  _checkAndInitScanner(forceRequest: true);
+                final opened = await openAppSettings();
+                if (!opened && mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Could not open settings. Please enable camera permission manually.',
+                      ),
+                    ),
+                  );
                 }
               },
               child: const Text('Grant Camera Permission'),
@@ -490,43 +493,30 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
 
   /// The actual permission + init work. Only ever runs one at a time thanks to
   /// the [_permissionFuture] lock in [_checkAndInitScanner].
+
   Future<void> _doPermissionCheck(bool forceRequest) async {
     try {
       final status = await Permission.camera.status;
-
-      // One-time grants on Android report as .denied on next cold check
-      // but the OS still allows the camera — so attempt init first if
-      // the status looks usable, and let the controller be the truth.
-      final bool statusAllowsAttempt =
-          status.isGranted ||
-          status.isLimited ||
-          forceRequest ||
-          status.isDenied;
-
-      if (statusAllowsAttempt && !status.isPermanentlyDenied) {
-        // If denied/one-time, request first, then try to start.
-        if (status.isDenied || forceRequest) {
-          final result = await Permission.camera.request();
-          // Permanently denied after dialog — send to settings.
-          if (result.isPermanentlyDenied) {
-            if (mounted) setState(() => _permissionGranted = false);
-            return;
-          }
-          // Even if result is .denied here, the controller start will
-          // fail gracefully — we let it try rather than bail early.
-        }
-
-        await _initScannerController();
-
-        // Re-query AFTER attempting start — one-time grants settle here.
-        final fresh = await Permission.camera.status;
-        final granted =
-            fresh.isGranted || fresh.isLimited || _scannerController != null;
-        if (mounted) setState(() => _permissionGranted = granted);
+      if (status.isPermanentlyDenied) {
+        if (mounted) setState(() => _permissionGranted = false);
         return;
       }
 
-      if (mounted) setState(() => _permissionGranted = false);
+      if (status.isDenied) {
+        final result = await Permission.camera.request();
+        if (result.isPermanentlyDenied || result.isDenied) {
+          if (mounted) setState(() => _permissionGranted = false);
+          return;
+        }
+      }
+
+      // Always attempt to init — let the controller itself fail if no permission
+      await _initScannerController();
+
+      final fresh = await Permission.camera.status;
+      if (mounted) {
+        setState(() => _permissionGranted = fresh.isGranted || fresh.isLimited);
+      }
     } catch (e) {
       debugPrint('Permission check failed: $e');
       if (mounted) setState(() => _permissionGranted = false);
@@ -534,26 +524,22 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
   }
 
   Future<void> _initScannerController() async {
-    _scannerController ??= MobileScannerController(
+    debugPrint('🎥 _initScannerController called — existing: $_scannerController');
+    if (_scannerController != null) return;
+
+    _scannerController = MobileScannerController(
       facing: CameraFacing.back,
       detectionSpeed: DetectionSpeed.normal,
     );
-    try {
-      await _scannerController?.start();
-      _scannerController?.addListener(_onTorchStateChanged);
-      if (_scannerController != null) {
-        if (mounted) {
-          setState(() {
-            _isFlashOn = _scannerController!.value.torchState == TorchState.on;
-          });
-        }
-      }
-    } catch (e) {
-      debugPrint('Failed to start scanner controller: $e');
-      // Dispose so next attempt creates a fresh controller.
-      await _scannerController?.dispose();
-      _scannerController = null;
+
+    _scannerController!.addListener(_onTorchStateChanged);
+
+    if (mounted) {
+      setState(() {
+        _isFlashOn = false;
+      });
     }
+    debugPrint('🎥 controller created, widget will call start()');
   }
 
   void _onTorchStateChanged() {
@@ -569,21 +555,8 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
 
   Future<void> _deinitScanner() async {
     if (_scannerController != null) {
-      try {
-        _scannerController!.removeListener(_onTorchStateChanged);
-      } catch (e) {
-        debugPrint('Failed to remove listener: $e');
-      }
-      try {
-        await _scannerController!.stop();
-      } catch (e) {
-        debugPrint('Failed to stop scanner on deinit: $e');
-      }
-      try {
-        await _scannerController!.dispose();
-      } catch (e) {
-        debugPrint('Failed to dispose scanner on deinit: $e');
-      }
+      _scannerController!.removeListener(_onTorchStateChanged);
+      await _scannerController!.dispose();
       _scannerController = null;
     }
     if (mounted) {
