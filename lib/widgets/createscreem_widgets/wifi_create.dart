@@ -80,7 +80,7 @@ class _WifiCreateState extends State<WifiCreate> {
             'WiFi Network Details'.toUpperCase(),
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[500],
+              color: Colors.white,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -91,7 +91,7 @@ class _WifiCreateState extends State<WifiCreate> {
             'Security Type',
             style: TextStyle(
               fontSize: 13,
-              color: Colors.grey[400],
+              color: Colors.white,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -118,12 +118,12 @@ class _WifiCreateState extends State<WifiCreate> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
                       color: selected
-                          ? Colors.teal
+                          ? Colors.green
                           : Theme.of(
                               context,
                             ).colorScheme.surfaceContainerHighest,
                       border: Border.all(
-                        color: selected ? Colors.teal : Colors.grey[700]!,
+                        color: selected ? Colors.green : Colors.grey[700]!,
                       ),
                     ),
                     child: Text(
@@ -146,7 +146,7 @@ class _WifiCreateState extends State<WifiCreate> {
             'Network Name (SSID)',
             style: TextStyle(
               fontSize: 13,
-              color: Colors.grey[400],
+              color: Colors.white,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -167,7 +167,7 @@ class _WifiCreateState extends State<WifiCreate> {
               'Password',
               style: TextStyle(
                 fontSize: 13,
-                color: Colors.grey[400],
+                color: Colors.white,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -199,13 +199,13 @@ class _WifiCreateState extends State<WifiCreate> {
                 'Hidden Network',
                 style: TextStyle(
                   fontSize: 13,
-                  color: Colors.grey[400],
+                  color: Colors.white,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               Switch(
                 value: _isHidden,
-                activeThumbColor: Colors.teal,
+                activeThumbColor: Colors.green,
                 onChanged: (v) {
                   setState(() => _isHidden = v);
                   _notify();

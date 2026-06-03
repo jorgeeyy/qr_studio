@@ -16,11 +16,22 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'QR Studio',
-      theme: ThemeData(primarySwatch: Colors.blue),
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        fontFamily: 'ElmsSans',
+        textTheme: ThemeData.light().textTheme.apply(fontFamily: 'ElmsSans'),
+      ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
+        fontFamily: 'ElmsSans',
+        textTheme: ThemeData.dark().textTheme
+            .apply(fontFamily: 'ElmsSans')
+            .copyWith(
+              bodyMedium: const TextStyle(color: Colors.white),
+              bodyLarge: const TextStyle(color: Colors.white),
+            ),
         colorScheme: ColorScheme.dark(
-          primary: Colors.blue[600]!,
+          primary: const Color.fromARGB(255, 3, 62, 114),
           secondary: Colors.blue[500]!,
           surface: const Color(0xFF1E1E1E),
           outlineVariant: const Color(0xFF3A3A3A),
@@ -51,10 +62,10 @@ class MyApp extends StatelessWidget {
             borderSide: BorderSide.none,
           ),
         ),
-        textTheme: const TextTheme(
-          bodyMedium: TextStyle(color: Colors.white),
-          bodyLarge: TextStyle(color: Colors.white),
-        ),
+        // textTheme: const TextTheme(
+        //   bodyMedium: TextStyle(color: Colors.white),
+        //   bodyLarge: TextStyle(color: Colors.white),
+        // ),
         dividerColor: const Color(0xFF2C2C2C),
       ),
       themeMode: ThemeMode.dark,

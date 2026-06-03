@@ -59,13 +59,21 @@ class SecondScreen extends StatelessWidget {
                 SizedBox(height: 20),
                 Text(
                   "Customize Your Style",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'ElmsSans',
+                  ),
                 ),
                 SizedBox(height: 10),
                 Text(
                   'Add vibrant colors, custom logos, and unique shapes to make your QR codes stand out.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.grey[600],
+                    fontFamily: 'ElmsSans',
+                  ),
                 ),
                 SizedBox(height: 20),
                 GridView.builder(
@@ -148,7 +156,11 @@ class SecondScreen extends StatelessWidget {
                     children: [
                       Text(
                         'Next',
-                        style: TextStyle(fontSize: 18, color: Colors.white),
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.white,
+                          fontFamily: 'ElmsSans',
+                        ),
                       ),
                       SizedBox(width: 10),
                       Icon(Icons.arrow_forward, color: Colors.white),
@@ -158,7 +170,10 @@ class SecondScreen extends StatelessWidget {
                 SizedBox(height: 30),
                 Text(
                   "step 2 of 3".toUpperCase(),
-                  style: TextStyle(color: Colors.grey[600]),
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontFamily: 'ElmsSans',
+                  ),
                 ),
               ],
             ),

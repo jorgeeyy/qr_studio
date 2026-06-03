@@ -69,32 +69,32 @@ class Preview extends StatelessWidget {
             'Live Preview'.toUpperCase(),
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[500],
+              color: Colors.white,
               fontWeight: FontWeight.w600,
             ),
           ),
           SizedBox(height: 10),
-          Container(
-            width: double.infinity,
+          SizedBox(
+            // width: double.infinity,
             height: 150,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              // color: Colors.grey[500],
-            ),
+            // decoration: BoxDecoration(
+            //   borderRadius: BorderRadius.circular(20),
+            //   color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            //   // color: Colors.grey[500],
+            // ),
             child: Center(
               child: qrData.trim().isEmpty
                   ? Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.qr_code, size: 50, color: Colors.grey[500]),
+                        Icon(Icons.qr_code, size: 50, color: Colors.white54),
                         SizedBox(height: 10),
                         Text(
                           'Your QR code will \nappear here as you \ntype',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey[600],
+                            color: Colors.white,
                             fontWeight: FontWeight.w500,
                           ),
                         ),

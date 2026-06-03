@@ -62,9 +62,24 @@ class CreateScreenState extends State<CreateScreen> {
   @override
   Widget build(BuildContext context) {
     final tabs = [
-      (icon: Icons.language, title: 'Website', type: QrCreateType.website),
-      (icon: Icons.wifi, title: 'WiFi', type: QrCreateType.wifi),
-      (icon: Icons.campaign, title: 'Socials', type: QrCreateType.contact),
+      (
+        icon: Icons.language,
+        title: 'Website',
+        type: QrCreateType.website,
+        bgColor: Colors.blue,
+      ),
+      (
+        icon: Icons.wifi,
+        title: 'WiFi',
+        type: QrCreateType.wifi,
+        bgColor: Colors.green,
+      ),
+      (
+        icon: Icons.campaign,
+        title: 'Socials',
+        type: QrCreateType.contact,
+        bgColor: Colors.amber[900]!,
+      ),
     ];
 
     return Scaffold(
@@ -87,18 +102,18 @@ class CreateScreenState extends State<CreateScreen> {
                     return GestureDetector(
                       onTap: () => setState(() => _selectedType = tab.type),
                       child: Container(
-                        width: 100,
+                        width: 110,
                         padding: const EdgeInsets.all(8.0),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(
                             color: isSelected
-                                ? Colors.blue[600]!
+                                ? tab.bgColor
                                 : Theme.of(context).colorScheme.outlineVariant,
                             width: 1.5,
                           ),
                           color: isSelected
-                              ? Colors.blue[600]
+                              ? tab.bgColor
                               : Theme.of(
                                   context,
                                 ).colorScheme.surfaceContainerHighest,
@@ -140,7 +155,7 @@ class CreateScreenState extends State<CreateScreen> {
                     controller: _urlController,
                     onChanged: (v) => setState(() => _qrData = v),
                   ),
-                  buttonLabel: 'GENERATE CODE',
+                  buttonLabel: 'GENERATE QR Code',
                   buttonIcon: Icons.qr_code_2,
                   buttonColor: Colors.blue[600]!,
                   emptyMessage: 'Please enter data for your QR code first',
@@ -161,8 +176,8 @@ class CreateScreenState extends State<CreateScreen> {
                       setState(() => _logoPosition = pos),
                   transformQrData: (data) =>
                       data.startsWith('http://') || data.startsWith('https://')
-                          ? data
-                          : 'https://$data',
+                      ? data
+                      : 'https://$data',
                   onReset: () => setState(() {
                     _qrData = '';
                     _urlController.clear();
@@ -175,9 +190,9 @@ class CreateScreenState extends State<CreateScreen> {
                   inputWidget: WifiCreate(
                     onChanged: (v) => setState(() => _wifiQrData = v),
                   ),
-                  buttonLabel: 'GENERATE WIFI QR',
+                  buttonLabel: 'GENERATE QR Code',
                   buttonIcon: Icons.wifi,
-                  buttonColor: Colors.teal[600]!,
+                  buttonColor: Colors.green,
                   emptyMessage: 'Please fill in the network name first',
                   foregroundColor: _foregroundColor,
                   backgroundColor: _backgroundColor,
@@ -205,9 +220,9 @@ class CreateScreenState extends State<CreateScreen> {
                   inputWidget: ContactCreate(
                     onChanged: (v) => setState(() => _contactQrData = v),
                   ),
-                  buttonLabel: 'GENERATE SOCIAL QR',
-                  buttonIcon: Icons.contact_page_outlined,
-                  buttonColor: Colors.orange[700]!,
+                  buttonLabel: 'GENERATE QR Code',
+                  buttonIcon: Icons.campaign,
+                  buttonColor: Colors.amber[900]!,
                   emptyMessage: 'Please enter your username first',
                   foregroundColor: _foregroundColor,
                   backgroundColor: _backgroundColor,

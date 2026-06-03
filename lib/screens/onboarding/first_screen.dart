@@ -13,7 +13,11 @@ class FirstScreen extends StatelessWidget {
         title: const Text.rich(
           TextSpan(
             text: 'QR Studio',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'ElmsSans',
+            ),
           ),
         ),
         actions: [
@@ -58,12 +62,20 @@ class FirstScreen extends StatelessWidget {
                 SizedBox(height: 30),
                 Text(
                   'Generate QR Codes Easily',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'ElmsSans',
+                  ),
                 ),
                 SizedBox(height: 10),
                 Text(
                   'Create QR Codes for links, texts, \ncontacts, Wi-Fi, and more.',
-                  style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.grey[600],
+                    fontFamily: 'ElmsSans',
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 50),
@@ -89,7 +101,11 @@ class FirstScreen extends StatelessWidget {
                     children: [
                       Text(
                         'Next',
-                        style: TextStyle(fontSize: 18, color: Colors.white),
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.white,
+                          fontFamily: 'ElmsSans',
+                        ),
                       ),
                       SizedBox(width: 10),
                       Icon(Icons.arrow_forward, color: Colors.white),
@@ -99,7 +115,10 @@ class FirstScreen extends StatelessWidget {
                 SizedBox(height: 30),
                 Text(
                   "step 1 of 3".toUpperCase(),
-                  style: TextStyle(color: Colors.grey[600]),
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontFamily: 'ElmsSans',
+                  ),
                 ),
               ],
             ),

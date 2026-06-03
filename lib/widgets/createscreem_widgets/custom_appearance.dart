@@ -390,14 +390,14 @@ class _CustomAppearanceState extends State<CustomAppearance> {
             'Custom Appearance'.toUpperCase(),
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
             ),
           ),
           SizedBox(height: 10),
           Text(
             'Color Picker',
-            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+            style: TextStyle(fontSize: 14, color: Colors.white),
           ),
           SizedBox(height: 10),
           Row(
@@ -476,7 +476,7 @@ class _CustomAppearanceState extends State<CustomAppearance> {
                       'body shape'.toUpperCase(),
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.grey[600],
+                        color: Colors.white,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -497,7 +497,7 @@ class _CustomAppearanceState extends State<CustomAppearance> {
                       'eye shape'.toUpperCase(),
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.grey[600],
+                        color: Colors.white,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -516,8 +516,8 @@ class _CustomAppearanceState extends State<CustomAppearance> {
             'logo upload'.toUpperCase(),
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
             ),
           ),
           SizedBox(height: 10),
@@ -580,7 +580,11 @@ class _CustomAppearanceState extends State<CustomAppearance> {
                   SizedBox(width: 8),
                   Text(
                     'Upload Logo',
-                    style: TextStyle(fontSize: 14, color: Colors.blue[400]),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.blue[400],
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),

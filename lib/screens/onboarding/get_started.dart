@@ -35,13 +35,21 @@ class GetStarted extends StatelessWidget {
                 SizedBox(height: 20),
                 Text(
                   "Save & Share Anywhere",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'ElmsSans',
+                  ),
                 ),
                 SizedBox(height: 10),
                 Text(
                   'Export high-quality QR codes instantly',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 15, color: Colors.grey[600]),
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.grey[600],
+                    fontFamily: 'ElmsSans',
+                  ),
                 ),
                 SizedBox(height: 20),
 
@@ -73,7 +81,11 @@ class GetStarted extends StatelessWidget {
                     children: [
                       Text(
                         'Get Started',
-                        style: TextStyle(fontSize: 18, color: Colors.white),
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.white,
+                          fontFamily: 'ElmsSans',
+                        ),
                       ),
                     ],
                   ),
@@ -81,7 +93,10 @@ class GetStarted extends StatelessWidget {
                 SizedBox(height: 30),
                 Text(
                   "step 3 of 3".toUpperCase(),
-                  style: TextStyle(color: Colors.grey[600]),
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontFamily: 'ElmsSans',
+                  ),
                 ),
               ],
             ),

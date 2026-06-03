@@ -20,7 +20,7 @@ class QuickGenerateIcons extends StatelessWidget {
         icon: Icons.wifi,
         title: 'WiFi',
         iconColor: Colors.teal[300]!,
-        bgColor: Colors.teal.withValues(alpha: 0.15),
+        bgColor: Colors.green.withValues(alpha: 0.15),
         type: QrCreateType.wifi,
       ),
       (
@@ -38,7 +38,7 @@ class QuickGenerateIcons extends StatelessWidget {
           children: [
             Text(
               'Quick Generate',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
             ),
           ],
         ),
@@ -58,7 +58,6 @@ class QuickGenerateIcons extends StatelessWidget {
                   width: 120,
                   child: Card(
                     color: Theme.of(context).colorScheme.surface,
-                    // color: Colors.grey[900],
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                       side: BorderSide(
