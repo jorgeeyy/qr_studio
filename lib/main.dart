@@ -62,10 +62,6 @@ class MyApp extends StatelessWidget {
             borderSide: BorderSide.none,
           ),
         ),
-        // textTheme: const TextTheme(
-        //   bodyMedium: TextStyle(color: Colors.white),
-        //   bodyLarge: TextStyle(color: Colors.white),
-        // ),
         dividerColor: const Color(0xFF2C2C2C),
       ),
       themeMode: ThemeMode.dark,

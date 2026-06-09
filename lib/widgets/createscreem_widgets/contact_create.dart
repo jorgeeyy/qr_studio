@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 
 class SocialPlatform {
   final String id;
   final String name;
-  final IconData icon;
+  final Widget Function(Color color, double size) icon;
   final Color color;
   final String hint;
   final String Function(String input) buildUrl;
@@ -18,11 +19,17 @@ class SocialPlatform {
   });
 }
 
+const double kSocialIconSize = 24.0;
+
 final List<SocialPlatform> kSocialPlatforms = [
   SocialPlatform(
     id: 'instagram',
     name: 'Instagram',
-    icon: Icons.photo_camera_outlined,
+    icon: (color, size) => HugeIcon(
+      icon: HugeIcons.strokeRoundedInstagram,
+      color: color,
+      size: size,
+    ),
     color: const Color(0xFFE1306C),
     hint: '@username',
     buildUrl: (u) =>
@@ -31,7 +38,11 @@ final List<SocialPlatform> kSocialPlatforms = [
   SocialPlatform(
     id: 'x',
     name: 'X / Twitter',
-    icon: Icons.close,
+    icon: (color, size) => HugeIcon(
+      icon: HugeIcons.strokeRoundedNewTwitter,
+      color: color,
+      size: size,
+    ),
     color: const Color(0xFF000000),
     hint: '@username',
     buildUrl: (u) => 'https://x.com/${u.replaceFirst(RegExp(r'^@'), '')}',
@@ -39,7 +50,11 @@ final List<SocialPlatform> kSocialPlatforms = [
   SocialPlatform(
     id: 'facebook',
     name: 'Facebook',
-    icon: Icons.facebook,
+    icon: (color, size) => HugeIcon(
+      icon: HugeIcons.strokeRoundedFacebook01,
+      color: color,
+      size: size,
+    ),
     color: const Color(0xFF1877F2),
     hint: 'username or page',
     buildUrl: (u) => 'https://facebook.com/$u',
@@ -47,7 +62,11 @@ final List<SocialPlatform> kSocialPlatforms = [
   SocialPlatform(
     id: 'linkedin',
     name: 'LinkedIn',
-    icon: Icons.work_outline,
+    icon: (color, size) => HugeIcon(
+      icon: HugeIcons.strokeRoundedLinkedin01,
+      color: color,
+      size: size,
+    ),
     color: const Color(0xFF0A66C2),
     hint: 'your-profile-name',
     buildUrl: (u) => 'https://linkedin.com/in/$u',
@@ -55,7 +74,8 @@ final List<SocialPlatform> kSocialPlatforms = [
   SocialPlatform(
     id: 'tiktok',
     name: 'TikTok',
-    icon: Icons.music_note_outlined,
+    icon: (color, size) =>
+        HugeIcon(icon: HugeIcons.strokeRoundedTiktok, color: color, size: size),
     color: const Color(0xFF010101),
     hint: '@username',
     buildUrl: (u) => 'https://tiktok.com/@${u.replaceFirst(RegExp(r'^@'), '')}',
@@ -63,7 +83,11 @@ final List<SocialPlatform> kSocialPlatforms = [
   SocialPlatform(
     id: 'youtube',
     name: 'YouTube',
-    icon: Icons.play_circle_outline,
+    icon: (color, size) => HugeIcon(
+      icon: HugeIcons.strokeRoundedYoutube,
+      color: color,
+      size: size,
+    ),
     color: const Color(0xFFFF0000),
     hint: '@channelname',
     buildUrl: (u) =>
@@ -72,7 +96,11 @@ final List<SocialPlatform> kSocialPlatforms = [
   SocialPlatform(
     id: 'snapchat',
     name: 'Snapchat',
-    icon: Icons.snapchat_outlined,
+    icon: (color, size) => HugeIcon(
+      icon: HugeIcons.strokeRoundedSnapchat,
+      color: color,
+      size: size,
+    ),
     color: const Color(0xFFFFFC00),
     hint: 'username',
     buildUrl: (u) => 'https://snapchat.com/add/$u',
@@ -80,7 +108,11 @@ final List<SocialPlatform> kSocialPlatforms = [
   SocialPlatform(
     id: 'whatsapp',
     name: 'WhatsApp',
-    icon: Icons.chat_outlined,
+    icon: (color, size) => HugeIcon(
+      icon: HugeIcons.strokeRoundedWhatsapp,
+      color: color,
+      size: size,
+    ),
     color: const Color(0xFF25D366),
     hint: '+1234567890 (with country code)',
     buildUrl: (u) => 'https://wa.me/${u.replaceAll(RegExp(r'[^0-9]'), '')}',
@@ -88,7 +120,11 @@ final List<SocialPlatform> kSocialPlatforms = [
   SocialPlatform(
     id: 'telegram',
     name: 'Telegram',
-    icon: Icons.send_outlined,
+    icon: (color, size) => HugeIcon(
+      icon: HugeIcons.strokeRoundedTelegram,
+      color: color,
+      size: size,
+    ),
     color: const Color(0xFF0088CC),
     hint: '@username',
     buildUrl: (u) => 'https://t.me/${u.replaceFirst(RegExp(r'^@'), '')}',
@@ -96,12 +132,24 @@ final List<SocialPlatform> kSocialPlatforms = [
   SocialPlatform(
     id: 'github',
     name: 'GitHub',
-    icon: Icons.code_outlined,
+    icon: (color, size) =>
+        HugeIcon(icon: HugeIcons.strokeRoundedGithub, color: color, size: size),
     color: const Color(0xFF6E5494),
     hint: 'username',
     buildUrl: (u) => 'https://github.com/$u',
   ),
 ];
+
+// Reusable helper to render a sized, centered HugeIcon
+Widget _buildIcon(
+  Widget Function(Color, double) iconBuilder,
+  Color color,
+  double size,
+) {
+  return Center(
+    child: SizedBox(width: size, height: size, child: iconBuilder(color, size)),
+  );
+}
 
 class ContactCreate extends StatefulWidget {
   const ContactCreate({super.key, required this.onChanged});
@@ -171,6 +219,7 @@ class _ContactCreateState extends State<ContactCreate> {
                   duration: const Duration(milliseconds: 150),
                   width: 56,
                   height: 56,
+                  alignment: Alignment.center, // ← ensures icon is centered
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
                     color: isSelected
@@ -181,10 +230,10 @@ class _ContactCreateState extends State<ContactCreate> {
                       width: isSelected ? 2 : 1,
                     ),
                   ),
-                  child: Icon(
+                  child: _buildIcon(
                     platform.icon,
-                    size: 24,
-                    color: isSelected ? platform.color : Colors.grey[500],
+                    isSelected ? platform.color : Colors.grey[500]!,
+                    kSocialIconSize,
                   ),
                 ),
               );
@@ -196,11 +245,16 @@ class _ContactCreateState extends State<ContactCreate> {
               Container(
                 width: 36,
                 height: 36,
+                alignment: Alignment.center, // ← same fix
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
                   color: _selected.color.withValues(alpha: 0.15),
                 ),
-                child: Icon(_selected.icon, size: 20, color: _selected.color),
+                child: _buildIcon(
+                  _selected.icon,
+                  _selected.color,
+                  kSocialIconSize,
+                ),
               ),
               const SizedBox(width: 10),
               Text(
@@ -233,11 +287,6 @@ class _ContactCreateState extends State<ContactCreate> {
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
                 borderSide: BorderSide(color: Colors.grey[500]!),
-              ),
-              suffixIcon: Icon(
-                _selected.icon,
-                size: 20,
-                color: _selected.color.withValues(alpha: 0.7),
               ),
             ),
           ),
