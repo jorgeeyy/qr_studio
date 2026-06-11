@@ -1,0 +1,2 @@
+-dontwarn javax.imageio.**
+-dontwarn com.github.jaiimageio.**
