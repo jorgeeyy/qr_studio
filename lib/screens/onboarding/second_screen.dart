@@ -13,7 +13,11 @@ class SecondScreen extends StatelessWidget {
         title: const Text.rich(
           TextSpan(
             text: 'QR Studio',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'ElmsSans',
+            ),
           ),
         ),
         actions: [
@@ -49,11 +53,7 @@ class SecondScreen extends StatelessWidget {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(20),
-                    child: Image.asset(
-                      'assets/images/QR3.png',
-                      // width: 500,
-                      // height: 500,
-                    ),
+                    child: Image.asset('assets/images/QR3.png'),
                   ),
                 ),
                 SizedBox(height: 20),
@@ -134,7 +134,7 @@ class SecondScreen extends StatelessWidget {
 
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue[800],
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),

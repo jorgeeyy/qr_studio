@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:qr_studio/screens/main/create_screen.dart';
+import 'package:qr_studio/models/qr_create_type.dart';
 
 class QuickGenerateIcons extends StatelessWidget {
   const QuickGenerateIcons({super.key, required this.onTypeTap});

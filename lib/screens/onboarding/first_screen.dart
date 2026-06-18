@@ -45,7 +45,6 @@ class FirstScreen extends StatelessWidget {
           child: Padding(
             padding: EdgeInsets.all(16.0),
             child: Column(
-              // crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(height: 50),
                 Center(
@@ -81,7 +80,7 @@ class FirstScreen extends StatelessWidget {
                 SizedBox(height: 50),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue[800],
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
@@ -91,7 +90,7 @@ class FirstScreen extends StatelessWidget {
                     // Navigate to the next onboarding screen
                     Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (context) => SecondScreen()),
+                      MaterialPageRoute(builder: (context) => const SecondScreen()),
                       (route) => false,
                     );
                   },

@@ -3,14 +3,12 @@ import 'package:flutter/material.dart';
 
 class ScannerControlDock extends StatelessWidget {
   final VoidCallback onGalleryTap;
-  // final VoidCallback onCenterTap;
   final VoidCallback onFlashlightTap;
   final bool isFlashOn;
 
   const ScannerControlDock({
     super.key,
     required this.onGalleryTap,
-    // required this.onCenterTap,
     required this.onFlashlightTap,
     required this.isFlashOn,
   });
@@ -34,9 +32,7 @@ class ScannerControlDock extends StatelessWidget {
                 label: 'Gallery',
                 onPressed: onGalleryTap,
               ),
-              SizedBox(width: 48),
-              // Central Rounded Button with QR icon
-              // _buildCenterQRButton(),
+              const SizedBox(width: 48),
               // Flashlight Button
               _buildActionButton(
                 icon: isFlashOn ? Icons.flash_on : Icons.flash_off_outlined,
@@ -50,39 +46,6 @@ class ScannerControlDock extends StatelessWidget {
       ),
     );
   }
-
-  // Widget _buildCenterQRButton() {
-  //   return GestureDetector(
-  //     onTap: () {
-  //       // You can add functionality here if needed
-  //     },
-  //     child: Container(
-  //       width: 72,
-  //       height: 72,
-  //       decoration: BoxDecoration(
-  //         shape: BoxShape.circle,
-  //         gradient: const LinearGradient(
-  //           colors: [Colors.blue, Colors.lightBlueAccent],
-  //           begin: Alignment.topLeft,
-  //           end: Alignment.bottomRight,
-  //         ),
-  //         boxShadow: [
-  //           BoxShadow(
-  //             color: Colors.blue.withValues(alpha: 0.35),
-  //             blurRadius: 18,
-  //             spreadRadius: 3,
-  //             offset: const Offset(0, 4),
-  //           ),
-  //         ],
-  //       ),
-  //       child: const Icon(
-  //         Icons.qr_code_scanner,
-  //         size: 32,
-  //         color: Colors.white,
-  //       ),
-  //     ),
-  //   );
-  // }
 
   Widget _buildActionButton({
     required IconData icon,

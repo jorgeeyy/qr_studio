@@ -51,9 +51,7 @@ class GetStarted extends StatelessWidget {
                     fontFamily: 'ElmsSans',
                   ),
                 ),
-                SizedBox(height: 20),
-
-                SizedBox(height: 20),
+                const SizedBox(height: 40),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,

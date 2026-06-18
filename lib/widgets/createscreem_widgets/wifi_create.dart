@@ -80,7 +80,7 @@ class _WifiCreateState extends State<WifiCreate> {
             'WiFi Network Details'.toUpperCase(),
             style: TextStyle(
               fontSize: 14,
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.w600,
             ),
           ),

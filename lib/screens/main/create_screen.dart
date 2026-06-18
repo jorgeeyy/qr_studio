@@ -1,26 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
+import 'package:qr_studio/models/qr_create_type.dart';
+import 'package:qr_studio/providers/create_provider.dart';
 import 'package:qr_studio/utils/qr_shapes.dart';
 import 'package:qr_studio/widgets/createscreem_widgets/contact_create.dart';
 import 'package:qr_studio/widgets/createscreem_widgets/qr_tab_shell.dart';
 import 'package:qr_studio/widgets/createscreem_widgets/url_create.dart';
 import 'package:qr_studio/widgets/createscreem_widgets/wifi_create.dart';
 
-enum QrCreateType { website, wifi, contact }
-
-class CreateScreen extends StatefulWidget {
-  const CreateScreen({super.key, this.initialType = QrCreateType.website});
-
-  final QrCreateType initialType;
+class CreateScreen extends ConsumerStatefulWidget {
+  const CreateScreen({super.key});
 
   @override
-  State<CreateScreen> createState() => CreateScreenState();
+  ConsumerState<CreateScreen> createState() => _CreateScreenState();
 }
 
-class CreateScreenState extends State<CreateScreen> {
+class _CreateScreenState extends ConsumerState<CreateScreen> {
   final TextEditingController _urlController = TextEditingController();
-
-  late QrCreateType _selectedType;
 
   // Per-tab QR data
   String _qrData = '';
@@ -36,8 +33,6 @@ class CreateScreenState extends State<CreateScreen> {
   PrettyQrDecorationImagePosition _logoPosition =
       PrettyQrDecorationImagePosition.embedded;
 
-  void setType(QrCreateType type) => setState(() => _selectedType = type);
-
   void _resetAppearance() {
     _foregroundColor = Colors.black;
     _backgroundColor = Colors.white;
@@ -48,12 +43,6 @@ class CreateScreenState extends State<CreateScreen> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    _selectedType = widget.initialType;
-  }
-
-  @override
   void dispose() {
     _urlController.dispose();
     super.dispose();
@@ -61,6 +50,7 @@ class CreateScreenState extends State<CreateScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedType = ref.watch(createTypeProvider);
     final tabs = [
       (
         icon: Icons.language,
@@ -98,9 +88,10 @@ class CreateScreenState extends State<CreateScreen> {
                   separatorBuilder: (_, _) => const SizedBox(width: 10),
                   itemBuilder: (context, index) {
                     final tab = tabs[index];
-                    final isSelected = _selectedType == tab.type;
+                    final isSelected = selectedType == tab.type;
                     return GestureDetector(
-                      onTap: () => setState(() => _selectedType = tab.type),
+                      onTap: () =>
+                          ref.read(createTypeProvider.notifier).update(tab.type),
                       child: Container(
                         width: 110,
                         padding: const EdgeInsets.all(8.0),
@@ -148,7 +139,7 @@ class CreateScreenState extends State<CreateScreen> {
               const SizedBox(height: 20),
 
               // Tab body
-              if (_selectedType == QrCreateType.website)
+              if (selectedType == QrCreateType.website)
                 QrTabShell(
                   qrData: _qrData,
                   inputWidget: UrlCreate(
@@ -184,7 +175,7 @@ class CreateScreenState extends State<CreateScreen> {
                     _resetAppearance();
                   }),
                 )
-              else if (_selectedType == QrCreateType.wifi)
+              else if (selectedType == QrCreateType.wifi)
                 QrTabShell(
                   qrData: _wifiQrData,
                   inputWidget: WifiCreate(
@@ -214,7 +205,7 @@ class CreateScreenState extends State<CreateScreen> {
                     _resetAppearance();
                   }),
                 )
-              else if (_selectedType == QrCreateType.contact)
+              else if (selectedType == QrCreateType.contact)
                 QrTabShell(
                   qrData: _contactQrData,
                   inputWidget: ContactCreate(

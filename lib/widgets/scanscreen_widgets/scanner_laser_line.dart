@@ -10,18 +10,18 @@ class ScannerLaserLine extends StatelessWidget {
     return Positioned.fill(
       child: LayoutBuilder(
         builder: (context, constraints) {
-          const double scanWidth = 250;
-          const double scanHeight = 250;
-          final double left = (constraints.maxWidth - scanWidth) / 2;
-          final double top = (constraints.maxHeight - scanHeight) / 2;
+          const double scanSize = 250;
+          const double laserInset = 10;
+          final double left = (constraints.maxWidth - scanSize) / 2;
+          final double top = (constraints.maxHeight - scanSize) / 2;
 
           return Stack(
             children: [
               Positioned(
                 left: left,
                 top: top,
-                width: scanWidth,
-                height: scanHeight,
+                width: scanSize,
+                height: scanSize,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(24),
                   child: Stack(
@@ -29,10 +29,11 @@ class ScannerLaserLine extends StatelessWidget {
                       AnimatedBuilder(
                         animation: laserAnimation,
                         builder: (context, child) {
+                          final travelRange = scanSize - 2 * laserInset;
                           return Positioned(
-                            top: 10 + (laserAnimation.value * 230),
-                            left: 10,
-                            right: 10,
+                            top: laserInset + (laserAnimation.value * travelRange),
+                            left: laserInset,
+                            right: laserInset,
                             child: Container(
                               height: 3,
                               decoration: BoxDecoration(

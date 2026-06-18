@@ -168,7 +168,7 @@ class ScannedResultScreen extends StatelessWidget {
 
               // ── WiFi details (if applicable) ──────────────────────────────
               if (info.type == ScannedContentType.wifi)
-                _WifiDetailsCard(data: data, theme: theme),
+                _WifiDetailsCard(data: data),
 
               // ── Action buttons ────────────────────────────────────────────
               const SizedBox(height: 8),
@@ -284,8 +284,7 @@ class _ContentCard extends StatelessWidget {
 
 class _WifiDetailsCard extends StatefulWidget {
   final String data;
-  final ThemeData theme;
-  const _WifiDetailsCard({required this.data, required this.theme});
+  const _WifiDetailsCard({required this.data});
 
   @override
   State<_WifiDetailsCard> createState() => _WifiDetailsCardState();
@@ -419,10 +418,10 @@ class _WifiDetailsCardState extends State<_WifiDetailsCard> {
       margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: widget.theme.colorScheme.surfaceContainerHighest,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: widget.theme.colorScheme.outlineVariant,
+          color: Theme.of(context).colorScheme.outlineVariant,
           width: 1.2,
         ),
       ),
@@ -434,7 +433,7 @@ class _WifiDetailsCardState extends State<_WifiDetailsCard> {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.5),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
               letterSpacing: 1.0,
             ),
           ),
@@ -449,7 +448,7 @@ class _WifiDetailsCardState extends State<_WifiDetailsCard> {
                 Icon(
                   Icons.key_rounded,
                   size: 18,
-                  color: widget.theme.colorScheme.onSurface.withValues(
+                  color: Theme.of(context).colorScheme.onSurface.withValues(
                     alpha: 0.5,
                   ),
                 ),
@@ -458,7 +457,7 @@ class _WifiDetailsCardState extends State<_WifiDetailsCard> {
                   'Password: ',
                   style: TextStyle(
                     fontSize: 14,
-                    color: widget.theme.colorScheme.onSurface.withValues(
+                    color: Theme.of(context).colorScheme.onSurface.withValues(
                       alpha: 0.6,
                     ),
                   ),
@@ -471,7 +470,7 @@ class _WifiDetailsCardState extends State<_WifiDetailsCard> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: widget.theme.colorScheme.onSurface,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontFamily: _showPassword ? null : 'monospace',
                     ),
                   ),
@@ -483,7 +482,7 @@ class _WifiDetailsCardState extends State<_WifiDetailsCard> {
                         ? Icons.visibility_off_rounded
                         : Icons.visibility_rounded,
                     size: 20,
-                    color: widget.theme.colorScheme.onSurface.withValues(
+                    color: Theme.of(context).colorScheme.onSurface.withValues(
                       alpha: 0.5,
                     ),
                   ),
@@ -507,7 +506,7 @@ class _WifiDetailsCardState extends State<_WifiDetailsCard> {
                   child: Icon(
                     Icons.copy_rounded,
                     size: 18,
-                    color: widget.theme.colorScheme.onSurface.withValues(
+                    color: Theme.of(context).colorScheme.onSurface.withValues(
                       alpha: 0.5,
                     ),
                   ),
@@ -572,14 +571,14 @@ class _WifiDetailsCardState extends State<_WifiDetailsCard> {
         Icon(
           icon,
           size: 18,
-          color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.5),
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
         ),
         const SizedBox(width: 10),
         Text(
           '$label: ',
           style: TextStyle(
             fontSize: 14,
-            color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
         Expanded(
@@ -588,7 +587,7 @@ class _WifiDetailsCardState extends State<_WifiDetailsCard> {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: widget.theme.colorScheme.onSurface,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ),

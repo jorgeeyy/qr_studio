@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
@@ -119,7 +118,7 @@ class QrTabShell extends ConsumerWidget {
     if (shouldReset == true) {
       final id = DateTime.now().millisecondsSinceEpoch.toString();
       String? logoPath;
-      if (!kIsWeb && logoImage is FileImage) {
+      if (logoImage is FileImage) {
         try {
           final src = (logoImage as FileImage).file;
           final dir = await getApplicationDocumentsDirectory();
