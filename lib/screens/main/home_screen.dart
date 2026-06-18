@@ -4,7 +4,8 @@ import 'package:qr_studio/models/qr_create_type.dart';
 import 'package:qr_studio/providers/create_provider.dart';
 import 'package:qr_studio/screens/main/create_screen.dart';
 import 'package:qr_studio/screens/main/history_screen.dart';
-import 'package:qr_studio/screens/main/profile_screen.dart';
+// import 'package:qr_studio/screens/settings_screen.dart';
+
 import 'package:qr_studio/screens/main/scan_screen.dart';
 import 'package:qr_studio/widgets/homescreen_widgets/quick_generate_icons.dart';
 import 'package:qr_studio/widgets/homescreen_widgets/digital_experience.dart';
@@ -32,16 +33,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     const CreateScreen(),
     ScanScreen(isActive: _currentIndex == 2),
     const HistoryScreen(),
-    const ProfileScreen(),
   ];
 
-  static const List<String> _titles = [
-    'Overview',
-    'Create',
-    'Scan',
-    'History',
-    'Profile',
-  ];
+  static const List<String> _titles = ['Overview', 'Create', 'Scan', 'History'];
 
   void _onNavTapped(int index) {
     setState(() {
@@ -63,7 +57,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
         ),
-
+        // actions: [
+        //   IconButton(
+        //     icon: const Icon(Icons.settings_outlined),
+        //     onPressed: () {
+        //       Navigator.of(context).pushReplacement(
+        //         MaterialPageRoute(builder: (_) => const SettingsScreen()),
+        //       );
+        //     },
+        //   ),
+        // ],
       ),
       body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: Padding(
