@@ -415,18 +415,21 @@ class _CustomAppearanceState extends State<CustomAppearance> {
                       ).colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(30),
                     ),
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('Foreground', style: TextStyle(fontSize: 14)),
-                        SizedBox(width: 8),
-                        Icon(
-                          Icons.palette,
-                          size: 16,
-                          color: widget.foregroundColor,
-                        ),
-                      ],
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('Foreground', style: TextStyle(fontSize: 14)),
+                          SizedBox(width: 6),
+                          Icon(
+                            Icons.palette,
+                            size: 16,
+                            color: widget.foregroundColor,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -445,20 +448,23 @@ class _CustomAppearanceState extends State<CustomAppearance> {
                       ).colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(30),
                     ),
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('Background', style: TextStyle(fontSize: 14)),
-                        SizedBox(width: 8),
-                        Icon(
-                          Icons.format_color_fill,
-                          size: 16,
-                          color: widget.backgroundColor == Colors.transparent
-                              ? Colors.grey
-                              : widget.backgroundColor,
-                        ),
-                      ],
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('Background', style: TextStyle(fontSize: 14)),
+                          SizedBox(width: 6),
+                          Icon(
+                            Icons.format_color_fill,
+                            size: 16,
+                            color: widget.backgroundColor == Colors.transparent
+                                ? Colors.grey
+                                : widget.backgroundColor,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
